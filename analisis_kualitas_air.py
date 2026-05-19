@@ -96,9 +96,15 @@ if menu == "Dashboard":
 
     st.header("📊 Dashboard Monitoring")
 
+    ph = st.session_state.get("hasil_ph", 0)
+    cod = st.session_state.get("hasil_cod", 0)
+    bod = st.session_state.get("hasil_bod", 0)
+    tss = st.session_state.get("hasil_tss", 0)
+    do = st.session_state.get("hasil_do", 0)
+
     data = {
         "Parameter": ["pH", "COD", "BOD", "TSS", "DO"],
-        "Nilai": [ph, cod, bod, tss, tds]
+        "Nilai": [ph, cod, bod, tss, do]
     }
 
     df = pd.DataFrame(data)
@@ -113,6 +119,7 @@ if menu == "Dashboard":
             df,
             x="Parameter",
             y="Nilai",
+            color="Parameter",
             title="Kualitas Air"
         )
 
