@@ -22,21 +22,25 @@ st.set_page_config(
 st.markdown("""
 <style>
 .main {
-    background-color: #0B1727;
-    color: #EAF4FF;
+    background-color: #EAF4FF;
+    color: #102A43;
 }
 
 section[data-testid="stSidebar"] {
-    background-color: #111C2D;
+    background-color: #D6ECFF;
+}
+
+html, body, [class*="css"] {
+    color: #102A43;
 }
 
 h1, h2, h3 {
-    color: #00CFFF;
+    color: #0099FF;
 }
 
 .stButton>button {
-    background-color: #00CFFF;
-    color: black;
+    background-color: #0099FF;
+    color: white;
     border-radius: 10px;
     border: none;
     font-weight: bold;
@@ -45,16 +49,17 @@ h1, h2, h3 {
 .stNumberInput input,
 .stTextInput input,
 .stTextArea textarea {
-    background-color: #1A2636;
-    color: white;
+    background-color: white;
+    color: #102A43;
 }
 
 .stSelectbox div[data-baseweb="select"] {
-    background-color: #1A2636;
+    background-color: white;
+    color: #102A43;
 }
 
 [data-testid="stDataFrame"] {
-    background-color: #111C2D;
+    background-color: white;
 }
 
 </style>
