@@ -11,7 +11,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 # =====================================================
 
 st.set_page_config(
-    page_title="WaterLab Analyzer Pro",
+    page_title="HydroLysis",
     layout="wide"
 )
 
@@ -22,19 +22,41 @@ st.set_page_config(
 st.markdown("""
 <style>
 .main {
-    background-color: #0e1117;
-    color: white;
+    background-color: #0B1727;
+    color: #EAF4FF;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #111C2D;
 }
 
 h1, h2, h3 {
-    color: #00d4ff;
+    color: #00CFFF;
 }
 
 .stButton>button {
-    background-color: #00d4ff;
+    background-color: #00CFFF;
     color: black;
     border-radius: 10px;
+    border: none;
+    font-weight: bold;
 }
+
+.stNumberInput input,
+.stTextInput input,
+.stTextArea textarea {
+    background-color: #1A2636;
+    color: white;
+}
+
+.stSelectbox div[data-baseweb="select"] {
+    background-color: #1A2636;
+}
+
+[data-testid="stDataFrame"] {
+    background-color: #111C2D;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -42,8 +64,8 @@ h1, h2, h3 {
 # TITLE
 # =====================================================
 
-st.title("🌊 WaterLab Analyzer Pro")
-st.write("Sistem Analisis Sampling Air Permukaan & Air Limbah")
+st.title("HydroLysis")
+st.write("Program Analisis Kualitas Air Hasil Sampling Air Permukaan & Air Limbah")
 
 # =====================================================
 # SIDEBAR MENU
@@ -465,12 +487,12 @@ elif menu == "Export PDF":
 
         doc.build(content)
 
-with open("laporan_waterlab.pdf", "rb") as pdf_file:
-    PDFbyte = pdf_file.read()
+        with open("laporan_waterlab.pdf", "rb") as pdf_file:
+            PDFbyte = pdf_file.read()
 
-st.download_button(
-    label="Download PDF",
-    data=PDFbyte,
-    file_name="laporan_waterlab.pdf",
-    mime='application/octet-stream'
-)
+        st.download_button(
+            label="Download PDF",
+            data=PDFbyte,
+            file_name="laporan_waterlab.pdf",
+            mime='application/octet-stream'
+        )
