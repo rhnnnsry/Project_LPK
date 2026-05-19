@@ -98,7 +98,7 @@ if menu == "Dashboard":
 
     data = {
         "Parameter": ["pH", "COD", "BOD", "TSS", "DO"],
-        "Nilai": [7.2, 85, 25, 40, 6]
+        "Nilai": [ph, cod, bod, tss, tds]
     }
 
     df = pd.DataFrame(data)
