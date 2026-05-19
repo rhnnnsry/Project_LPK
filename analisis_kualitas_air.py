@@ -465,4 +465,12 @@ elif menu == "Export PDF":
 
         doc.build(content)
 
-        st.success("PDF berhasil dibuat!")
+with open("laporan_waterlab.pdf", "rb") as pdf_file:
+    PDFbyte = pdf_file.read()
+
+st.download_button(
+    label="Download PDF",
+    data=PDFbyte,
+    file_name="laporan_waterlab.pdf",
+    mime='application/octet-stream'
+)
