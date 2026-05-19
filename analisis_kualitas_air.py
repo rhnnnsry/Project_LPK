@@ -166,6 +166,7 @@ elif menu == "Air Permukaan":
 
             tss = ((berat_akhir - berat_awal) * 1000) / volume
 
+            st.session_state["hasil_tss"] = tss
             st.success(f"Nilai TSS = {tss:.2f} mg/L")
 
             if tss <= 50:
@@ -215,6 +216,7 @@ elif menu == "Air Permukaan":
 
             cod = ((blanko - sampel) * normalitas * 8000) / volume_sampel
 
+            st.session_state["hasil_cod"] = cod
             st.success(f"Nilai COD = {cod:.2f} mg/L")
 
             if cod <= 100:
@@ -246,6 +248,7 @@ elif menu == "Air Permukaan":
 
             bod = do_awal - do_akhir
 
+            st.session_state["hasil_bod"] = bod
             st.success(f"Nilai BOD = {bod:.2f} mg/L")
 
             if bod <= 30:
@@ -283,6 +286,7 @@ elif menu == "Air Permukaan":
 
             tds = ((berat_akhir - berat_awal) * 1000) / volume
 
+            st.session_state["hasil_tds"] = tds
             st.success(f"Nilai TDS = {tds:.2f} mg/L")
 
 # =====================================================
@@ -316,6 +320,8 @@ elif menu == "Air Limbah":
         )
 
         if st.button("Evaluasi pH"):
+
+            st.session_state["hasil_ph"] = ph
 
             if 6 <= ph <= 9:
                 st.success("✅ pH memenuhi baku mutu")
@@ -356,6 +362,7 @@ elif menu == "Air Limbah":
 
             cod = ((blanko - sampel) * normalitas * 8000) / volume
 
+            st.session_state["hasil_cod"] = cod
             st.success(f"COD = {cod:.2f} mg/L")
 
     # ==============================================
@@ -380,6 +387,7 @@ elif menu == "Air Limbah":
 
             bod = do_awal - do_akhir
 
+            st.session_state["hasil_bod"] = bod
             st.success(f"BOD = {bod:.2f} mg/L")
 
     # ==============================================
@@ -395,6 +403,7 @@ elif menu == "Air Limbah":
 
         if st.button("Evaluasi Amonia"):
 
+            st.session_state["hasil_amonia"] = amonia
             st.success(f"Amonia = {konsentrasi:.2f} mg/L")
 
             if konsentrasi <= 10:
@@ -440,20 +449,24 @@ elif menu == "Statistik & Grafik":
 
     st.header("📈 Statistik & Grafik")
 
-    parameter = ["pH", "COD", "BOD", "TSS"]
-    nilai = [7, 80, 20, 40]
+    cod = st.session_state.get("hasil_cod", 0)
+    bod = st.session_state.get("hasil_bod", 0)
+    tss = st.session_state.get("hasil_tss", 0)
+    tds = st.session_state.get("hasil_tds", 0)
 
     df = pd.DataFrame({
-        "Parameter": parameter,
-        "Nilai": nilai
+        "Parameter": ["COD", "BOD", "TSS", "TDS"],
+        "Nilai": [cod, bod, tss, tds]
     })
 
-    fig = px.line(
+    st.dataframe(df)
+
+    fig = px.bar(
         df,
         x="Parameter",
         y="Nilai",
-        markers=True,
-        title="Trend Parameter"
+        color="Parameter",
+        title="Hasil Analisis Kualitas Air"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -468,15 +481,18 @@ elif menu == "Export PDF":
 
     lokasi = st.text_input("Nama Lokasi")
 
-    hasil = st.text_area("Ringkasan Hasil")
-
     if st.button("Buat PDF"):
 
-        doc = SimpleDocTemplate("laporan_waterlab.pdf")
+        doc = SimpleDocTemplate("laporan_hydrolysis.pdf")
 
         styles = getSampleStyleSheet()
 
         content = []
+
+        cod = st.session_state.get("hasil_cod", "-")
+        bod = st.session_state.get("hasil_bod", "-")
+        tss = st.session_state.get("hasil_tss", "-")
+        tds = st.session_state.get("hasil_tds", "-")
 
         content.append(
             Paragraph("Laporan Analisis Air", styles['Title'])
@@ -487,17 +503,29 @@ elif menu == "Export PDF":
         )
 
         content.append(
-            Paragraph(f"Hasil: {hasil}", styles['Normal'])
+            Paragraph(f"COD: {cod} mg/L", styles['Normal'])
+        )
+
+        content.append(
+            Paragraph(f"BOD: {bod} mg/L", styles['Normal'])
+        )
+
+        content.append(
+            Paragraph(f"TSS: {tss} mg/L", styles['Normal'])
+        )
+
+        content.append(
+            Paragraph(f"TDS: {tds} mg/L", styles['Normal'])
         )
 
         doc.build(content)
 
-        with open("laporan_waterlab.pdf", "rb") as pdf_file:
+        with open("laporan_hydrolysis.pdf", "rb") as pdf_file:
             PDFbyte = pdf_file.read()
 
         st.download_button(
             label="Download PDF",
             data=PDFbyte,
-            file_name="laporan_waterlab.pdf",
+            file_name="laporan_hydrolysis.pdf",
             mime='application/octet-stream'
         )
