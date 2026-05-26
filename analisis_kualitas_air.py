@@ -170,26 +170,88 @@ st.sidebar.metric("Total Sampel Tersimpan", len(st.session_state["sampel_list"])
 
 if menu == "Dashboard":
 
-    st.header("📊 Dashboard Monitoring")
+    st.header("📊 Dashboard")
 
+     # ── Tentang Aplikasi ──────────────────────────────
+    with st.expander("ℹ️ Tentang HydroLysis", expanded=True):
+ 
+        st.markdown("""
+        ### 🎯 Tujuan Aplikasi
+        **HydroLysis** adalah program berbasis web yang dirancang untuk membantu mahasiswa maupun
+        praktisi laboratorium di **Politeknik AKA Bogor** dalam melakukan analisis dan pemantauan
+        kualitas air secara sistematis. Aplikasi ini juga merupakan bagian dari projek mata kuliah **Logika Pemrograman Komputer**.
+        Pada aplikasi ini pengguna bisa:
+        - Menghitung parameter kualitas air dari data hasil sampling
+        - Membandingkan hasil pengukuran dengan **baku mutu** yang berlaku (PP No. 22 Tahun 2021 dan PermenLHK No. P.68 Tahun 2016)
+        - Menyimpan dan mengelola data dari **beberapa lokasi dan waktu sampling**
+        - Menghasilkan laporan PDF yang siap cetak
+        """)
+
+        st.markdown("---")
+ 
+        col_ap, col_al = st.columns(2)
+ 
+        with col_ap:
+            st.markdown("""
+            ### 🌊 Air Permukaan
+            Air permukaan adalah air yang berada di atas permukaan tanah, meliputi
+            **sungai, danau, waduk, rawa**, dan badan air terbuka lainnya.
+            Air ini merupakan sumber utama baku air minum dan irigasi, namun rentan
+            terhadap pencemaran dari aktivitas manusia di sekitarnya.
+ 
+            **Parameter yang dianalisis:**
+            | Parameter | Satuan | Baku Mutu |
+            |-----------|--------|-----------|
+            | TSS (Total Suspended Solids) | mg/L | ≤ 50 |
+            | COD (Chemical Oxygen Demand) | mg/L | ≤ 100 |
+            | BOD₅ (Biochemical Oxygen Demand) | mg/L | ≤ 30 |
+            | TDS (Total Dissolved Solids) | mg/L | ≤ 500 |
+
+            > 📋 Referensi: **PP No. 22 Tahun 2021** tentang Penyelenggaraan
+            Perlindungan dan Pengelolaan Lingkungan Hidup
+            """)
+
+        with col_al:
+            st.markdown("""
+            ### 🏭 Air Limbah
+            Air limbah adalah air buangan yang dihasilkan dari kegiatan industri,
+            rumah tangga, pertanian, maupun fasilitas umum. Air limbah mengandung
+            berbagai zat pencemar yang harus diolah terlebih dahulu sebelum
+            dibuang ke badan air penerima.
+ 
+            **Parameter yang dianalisis:**
+            | Parameter | Satuan | Baku Mutu |
+            |-----------|--------|-----------|
+            | pH | - | 6.0 – 9.0 |
+            | COD (Chemical Oxygen Demand) | mg/L | ≤ 100 |
+            | BOD₅ (Biochemical Oxygen Demand) | mg/L | ≤ 30 |
+            | Amonia (NH₃-N) | mg/L | ≤ 10 |
+ 
+            > 📋 Referensi: **PermenLHK No. P.68 Tahun 2016** tentang
+            Baku Mutu Air Limbah Domestik
+            """)
+
+    st.markdown("---")
+
+    # ── Monitoring data ───────────────────────────────
     df = get_df()
-
+ 
     if df.empty:
         st.info("Belum ada data. Mulai input di menu **Air Permukaan** atau **Air Limbah**.")
         st.stop()
-
+ 
     total     = len(df)
     memenuhi  = (df["Status"] == "✅ Memenuhi").sum()
     melebihi  = (df["Status"] == "❌ Melebihi").sum()
-
+ 
     m1, m2, m3 = st.columns(3)
     m1.metric("Total Pengukuran",       total)
     m2.metric("✅ Memenuhi Baku Mutu",  memenuhi)
     m3.metric("❌ Melebihi Baku Mutu",  melebihi)
-
+ 
     st.markdown("---")
     col_a, col_b = st.columns(2)
-
+ 
     with col_a:
         avg_df = df.groupby("Parameter")["Nilai"].mean().reset_index()
         avg_df.columns = ["Parameter", "Rata-rata Nilai"]
@@ -200,7 +262,7 @@ if menu == "Dashboard":
         )
         fig1.update_layout(showlegend=False)
         st.plotly_chart(fig1, use_container_width=True)
-
+ 
     with col_b:
         pie_df = df["Status"].value_counts().reset_index()
         pie_df.columns = ["Status", "Jumlah"]
@@ -211,10 +273,9 @@ if menu == "Dashboard":
             color_discrete_map={"✅ Memenuhi": "#00CC66", "❌ Melebihi": "#FF4444"}
         )
         st.plotly_chart(fig2, use_container_width=True)
-
+ 
     st.subheader("10 Data Terbaru")
     st.dataframe(df.tail(10), use_container_width=True)
-
 
 # ═══════════════════════════════════════════════════════
 # 2 ── AIR PERMUKAAN
