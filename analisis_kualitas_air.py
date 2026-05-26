@@ -70,7 +70,7 @@ h1, h2, h3 {
 # =====================================================
 
 st.title("HydroLysis")
-st.write("Program Analisis Kualitas Air Hasil Sampling Air Permukaan & Air Limbah")
+st.write("Program Analisis Kualitas Air Hasil Sampling Air Permukaan & Air Limbah - POLITEKNIK AKA BOGOR")
 
 # =====================================================
 # SIDEBAR MENU
@@ -82,7 +82,6 @@ menu = st.sidebar.selectbox(
         "Dashboard",
         "Air Permukaan",
         "Air Limbah",
-        "Upload Data Excel",
         "Statistik & Grafik",
         "Export PDF"
     ]
@@ -417,36 +416,6 @@ elif menu == "Air Limbah":
                 st.success("✅ Memenuhi baku mutu")
             else:
                 st.error("❌ Melebihi baku mutu")
-
-# =====================================================
-# UPLOAD EXCEL
-# =====================================================
-
-elif menu == "Upload Data Excel":
-
-    st.header("📂 Upload Data Hasil Sampling")
-
-    file = st.file_uploader(
-        "Upload file Excel",
-        type=["xlsx"],
-        key="upload_excel"
-    )
-
-    if file is not None:
-
-        data = pd.read_excel(file)
-
-        st.subheader("Data Praktikum")
-
-        st.dataframe(data)
-
-        st.subheader("Statistik")
-
-        st.write(data.describe())
-
-        fig = px.histogram(data)
-
-        st.plotly_chart(fig, use_container_width=True)
 
 # =====================================================
 # STATISTIK
