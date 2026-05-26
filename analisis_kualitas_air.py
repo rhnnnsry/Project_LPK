@@ -1,507 +1,597 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from datetime import date
 
-# =====================================================
+# ═══════════════════════════════════════════════════════
 # CONFIG
-# =====================================================
+# ═══════════════════════════════════════════════════════
 
-st.set_page_config(
-    page_title="HydroLysis",
-    layout="wide"
-)
+st.set_page_config(page_title="HydroLysis", layout="wide")
 
-# =====================================================
+# ═══════════════════════════════════════════════════════
+# INIT SESSION STATE
+# ═══════════════════════════════════════════════════════
+
+if "sampel_list" not in st.session_state:
+    st.session_state["sampel_list"] = []
+
+if "counter" not in st.session_state:
+    st.session_state["counter"] = 1
+
+# Temp values untuk setiap parameter (None = belum dihitung)
+for k in ["v_tss", "v_cod_ap", "v_bod_ap", "v_tds",
+          "v_ph",  "v_cod_al", "v_bod_al", "v_amonia"]:
+    if k not in st.session_state:
+        st.session_state[k] = None
+
+# ═══════════════════════════════════════════════════════
+# KONSTANTA BAKU MUTU
+# ═══════════════════════════════════════════════════════
+
+BAKU_MUTU = {
+    "TSS":    ("≤ 50 mg/L",   lambda v: v <= 50),
+    "COD":    ("≤ 100 mg/L",  lambda v: v <= 100),
+    "BOD":    ("≤ 30 mg/L",   lambda v: v <= 30),
+    "TDS":    ("≤ 500 mg/L",  lambda v: v <= 500),
+    "pH":     ("6.0 – 9.0",   lambda v: 6.0 <= v <= 9.0),
+    "Amonia": ("≤ 10 mg/L",   lambda v: v <= 10),
+}
+
+# ═══════════════════════════════════════════════════════
+# HELPER FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+def cek_status(param: str, nilai: float) -> str:
+    if param in BAKU_MUTU:
+        return "✅ Memenuhi" if BAKU_MUTU[param][1](nilai) else "❌ Melebihi"
+    return "-"
+
+
+def simpan_ke_tabel(lokasi: str, tanggal, tipe: str, param: str, nilai: float):
+    status = cek_status(param, nilai)
+    bm_str = BAKU_MUTU.get(param, ("-", None))[0]
+    st.session_state["sampel_list"].append({
+        "ID":        st.session_state["counter"],
+        "Tanggal":   str(tanggal),
+        "Lokasi":    lokasi,
+        "Tipe Air":  tipe,
+        "Parameter": param,
+        "Nilai":     round(nilai, 3),
+        "Baku Mutu": bm_str,
+        "Status":    status,
+    })
+    st.session_state["counter"] += 1
+
+
+def get_df() -> pd.DataFrame:
+    if st.session_state["sampel_list"]:
+        return pd.DataFrame(st.session_state["sampel_list"])
+    return pd.DataFrame(
+        columns=["ID", "Tanggal", "Lokasi", "Tipe Air",
+                 "Parameter", "Nilai", "Baku Mutu", "Status"]
+    )
+
+
+def show_result_and_save(val_key: str, param: str, tipe: str, lok: str, tgl):
+    """
+    Tampilkan hasil perhitungan + tombol Simpan ke Tabel.
+    Dipakai di semua halaman parameter agar konsisten.
+    """
+    nilai = st.session_state.get(val_key)
+    if nilai is None:
+        return
+
+    status   = cek_status(param, nilai)
+    bm_str   = BAKU_MUTU.get(param, ("-", None))[0]
+    satuan   = "" if param == "pH" else " mg/L"
+    label    = f"**{param} = {nilai:.3f}{satuan}** — {status}  (Baku Mutu: {bm_str})"
+
+    st.markdown("---")
+    col_res, col_btn = st.columns([4, 1])
+    with col_res:
+        if status == "✅ Memenuhi":
+            st.success(label)
+        else:
+            st.error(label)
+    with col_btn:
+        if st.button("💾 Simpan ke Tabel", key=f"save_{val_key}"):
+            if not lok:
+                st.warning("⚠️ Isi nama lokasi terlebih dahulu.")
+            else:
+                simpan_ke_tabel(lok, tgl, tipe, param, nilai)
+                st.session_state[val_key] = None
+                st.toast("✅ Data berhasil disimpan!", icon="✅")
+                st.rerun()
+
+
+def info_sampel_expander(prefix: str):
+    """Widget lokasi + tanggal yang konsisten di semua menu."""
+    with st.expander("📋 Informasi Sampel", expanded=True):
+        c1, c2 = st.columns(2)
+        with c1:
+            lok = st.text_input("Nama Lokasi / Sumber Air", key=f"{prefix}_lok")
+        with c2:
+            tgl = st.date_input("Tanggal Sampling", value=date.today(), key=f"{prefix}_tgl")
+    return lok, tgl
+
+
+# ═══════════════════════════════════════════════════════
 # CUSTOM CSS
-# =====================================================
+# ═══════════════════════════════════════════════════════
 
 st.markdown("""
 <style>
-.main {
-    background-color: #EAF4FF;
-    color: #102A43;
-}
-
-section[data-testid="stSidebar"] {
-    background-color: #D6ECFF;
-}
-
-html, body, [class*="css"] {
-    color: #102A43;
-}
-
-h1, h2, h3 {
-    color: #0099FF;
-}
-
-.stButton>button {
-    background-color: #0099FF;
-    color: white;
-    border-radius: 10px;
-    border: none;
-    font-weight: bold;
-}
-
+.main                              { background-color:#EAF4FF; color:#102A43; }
+section[data-testid="stSidebar"]   { background-color:#D6ECFF; }
+html,body,[class*="css"]           { color:#102A43; }
+h1,h2,h3                           { color:#0099FF; }
+.stButton>button                   { background-color:#0099FF; color:white;
+                                     border-radius:10px; border:none; font-weight:bold; }
 .stNumberInput input,
-.stTextInput input,
-.stTextArea textarea {
-    background-color: white;
-    color: #102A43;
-}
-
-.stSelectbox div[data-baseweb="select"] {
-    background-color: white;
-    color: #102A43;
-}
-
-[data-testid="stDataFrame"] {
-    background-color: white;
-}
-
+.stTextInput  input,
+.stTextArea   textarea             { background-color:white; color:#102A43; }
+.stSelectbox  div[data-baseweb="select"] { background-color:white; color:#102A43; }
+[data-testid="stDataFrame"]        { background-color:white; }
 </style>
 """, unsafe_allow_html=True)
 
-# =====================================================
+# ═══════════════════════════════════════════════════════
 # TITLE
-# =====================================================
+# ═══════════════════════════════════════════════════════
 
-st.title("HydroLysis")
-st.write("Program Analisis Kualitas Air Hasil Sampling Air Permukaan & Air Limbah - POLITEKNIK AKA BOGOR")
+st.title("💧 HydroLysis")
+st.caption("Program Analisis Kualitas Air — Air Permukaan & Air Limbah | POLITEKNIK AKA BOGOR")
 
-# =====================================================
+# ═══════════════════════════════════════════════════════
 # SIDEBAR MENU
-# =====================================================
+# ═══════════════════════════════════════════════════════
 
-menu = st.sidebar.selectbox(
-    "Pilih Menu",
-    [
-        "Dashboard",
-        "Air Permukaan",
-        "Air Limbah",
-        "Statistik & Grafik",
-        "Export PDF"
-    ]
-)
+menu = st.sidebar.selectbox("Pilih Menu", [
+    "Dashboard",
+    "Air Permukaan",
+    "Air Limbah",
+    "Tabel Sampel",
+    "Statistik & Grafik",
+    "Export PDF",
+])
 
-# =====================================================
-# DASHBOARD
-# =====================================================
+st.sidebar.markdown("---")
+st.sidebar.metric("Total Sampel Tersimpan", len(st.session_state["sampel_list"]))
+
+# ═══════════════════════════════════════════════════════
+# 1 ── DASHBOARD
+# ═══════════════════════════════════════════════════════
 
 if menu == "Dashboard":
 
     st.header("📊 Dashboard Monitoring")
 
-    ph = st.session_state.get("hasil_ph", 0)
-    cod = st.session_state.get("hasil_cod", 0)
-    bod = st.session_state.get("hasil_bod", 0)
-    tss = st.session_state.get("hasil_tss", 0)
-    do = st.session_state.get("hasil_do", 0)
+    df = get_df()
 
-    data = {
-        "Parameter": ["pH", "COD", "BOD", "TSS", "DO"],
-        "Nilai": [ph, cod, bod, tss, do]
-    }
+    if df.empty:
+        st.info("Belum ada data. Mulai input di menu **Air Permukaan** atau **Air Limbah**.")
+        st.stop()
 
-    df = pd.DataFrame(data)
+    total     = len(df)
+    memenuhi  = (df["Status"] == "✅ Memenuhi").sum()
+    melebihi  = (df["Status"] == "❌ Melebihi").sum()
 
-    col1, col2 = st.columns(2)
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Total Pengukuran",       total)
+    m2.metric("✅ Memenuhi Baku Mutu",  memenuhi)
+    m3.metric("❌ Melebihi Baku Mutu",  melebihi)
 
-    with col1:
-        st.dataframe(df)
+    st.markdown("---")
+    col_a, col_b = st.columns(2)
 
-    with col2:
-        fig = px.bar(
-            df,
-            x="Parameter",
-            y="Nilai",
-            color="Parameter",
-            title="Kualitas Air"
+    with col_a:
+        avg_df = df.groupby("Parameter")["Nilai"].mean().reset_index()
+        avg_df.columns = ["Parameter", "Rata-rata Nilai"]
+        fig1 = px.bar(
+            avg_df, x="Parameter", y="Rata-rata Nilai",
+            color="Parameter", text_auto=".2f",
+            title="Rata-rata Nilai per Parameter"
         )
+        fig1.update_layout(showlegend=False)
+        st.plotly_chart(fig1, use_container_width=True)
 
-        st.plotly_chart(fig, use_container_width=True)
+    with col_b:
+        pie_df = df["Status"].value_counts().reset_index()
+        pie_df.columns = ["Status", "Jumlah"]
+        fig2 = px.pie(
+            pie_df, names="Status", values="Jumlah",
+            title="Kepatuhan Baku Mutu",
+            color="Status",
+            color_discrete_map={"✅ Memenuhi": "#00CC66", "❌ Melebihi": "#FF4444"}
+        )
+        st.plotly_chart(fig2, use_container_width=True)
 
-# =====================================================
-# AIR PERMUKAAN
-# =====================================================
+    st.subheader("10 Data Terbaru")
+    st.dataframe(df.tail(10), use_container_width=True)
+
+
+# ═══════════════════════════════════════════════════════
+# 2 ── AIR PERMUKAAN
+# ═══════════════════════════════════════════════════════
 
 elif menu == "Air Permukaan":
 
     st.header("🌊 Analisis Air Permukaan")
+    lok, tgl = info_sampel_expander("ap")
 
-    submenu = st.selectbox(
-        "Pilih Parameter",
-        [
-            "TSS",
-            "COD",
-            "BOD",
-            "TDS"
-        ]
-    )
+    submenu = st.selectbox("Pilih Parameter", ["TSS", "COD", "BOD", "TDS"])
 
-    # =================================================
-    # TSS
-    # =================================================
-
+    # ── TSS ──────────────────────────────────────────
     if submenu == "TSS":
-
         st.subheader("Perhitungan TSS")
+        st.latex(r"\text{TSS} = \frac{(\text{Berat Akhir} - \text{Berat Awal}) \times 1000}{\text{Volume Sampel}}")
 
-        berat_awal = st.number_input(
-            "Berat filter awal (mg)",
-            min_value=0.0,
-            key="tss_awal"
-        )
-
-        berat_akhir = st.number_input(
-            "Berat filter akhir (mg)",
-            min_value=0.0,
-            key="tss_akhir"
-        )
-
-        volume = st.number_input(
-            "Volume sampel (mL)",
-            min_value=0.0,
-            key="tss_volume"
-        )
+        ba = st.number_input("Berat filter awal (mg)",  min_value=0.0, key="tss_ba")
+        bk = st.number_input("Berat filter akhir (mg)", min_value=0.0, key="tss_bk")
+        vol = st.number_input("Volume sampel (mL)",     min_value=0.1, value=100.0, key="tss_vol")
 
         if st.button("Hitung TSS"):
-
-            tss = ((berat_akhir - berat_awal) * 1000) / volume
-
-            st.session_state["hasil_tss"] = tss
-            st.success(f"Nilai TSS = {tss:.2f} mg/L")
-
-            if tss <= 50:
-                st.success("✅ Memenuhi baku mutu")
+            if vol <= 0:
+                st.error("Volume sampel harus > 0 mL.")
             else:
-                st.error("❌ Melebihi baku mutu")
+                st.session_state["v_tss"] = ((bk - ba) * 1000) / vol
 
-            fig = go.Figure(
-                data=[go.Bar(x=["TSS"], y=[tss])]
-            )
+        show_result_and_save("v_tss", "TSS", "Air Permukaan", lok, tgl)
 
-            st.plotly_chart(fig, use_container_width=True)
-
-    # =================================================
-    # COD
-    # =================================================
-
+    # ── COD ──────────────────────────────────────────
     elif submenu == "COD":
-
         st.subheader("Perhitungan COD")
+        st.latex(r"\text{COD} = \frac{(V_{\text{blanko}} - V_{\text{sampel}}) \times N \times 8000}{V_{\text{air}}}")
 
-        blanko = st.number_input(
-            "Volume blanko (mL)",
-            min_value=0.0,
-            key="cod_blanko"
-        )
-
-        sampel = st.number_input(
-            "Volume sampel (mL)",
-            min_value=0.0,
-            key="cod_sampel"
-        )
-
-        normalitas = st.number_input(
-            "Normalitas FAS",
-            min_value=0.0,
-            key="cod_normalitas"
-        )
-
-        volume_sampel = st.number_input(
-            "Volume sampel air (mL)",
-            min_value=0.0,
-            key="cod_volume"
-        )
+        v_blanko  = st.number_input("Volume titrasi blanko (mL)",  min_value=0.0, key="cod_ap_bl")
+        v_sampel  = st.number_input("Volume titrasi sampel (mL)",  min_value=0.0, key="cod_ap_sp")
+        normalitas = st.number_input("Normalitas FAS",             min_value=0.0, key="cod_ap_n")
+        v_air      = st.number_input("Volume sampel air (mL)",     min_value=0.1, value=25.0, key="cod_ap_vol")
 
         if st.button("Hitung COD"):
-
-            cod = ((blanko - sampel) * normalitas * 8000) / volume_sampel
-
-            st.session_state["hasil_cod"] = cod
-            st.success(f"Nilai COD = {cod:.2f} mg/L")
-
-            if cod <= 100:
-                st.success("✅ Memenuhi baku mutu")
+            if v_air <= 0:
+                st.error("Volume sampel air harus > 0 mL.")
             else:
-                st.error("❌ Melebihi baku mutu")
+                st.session_state["v_cod_ap"] = ((v_blanko - v_sampel) * normalitas * 8000) / v_air
 
-    # =================================================
-    # BOD
-    # =================================================
+        show_result_and_save("v_cod_ap", "COD", "Air Permukaan", lok, tgl)
 
+    # ── BOD ──────────────────────────────────────────
     elif submenu == "BOD":
+        st.subheader("Perhitungan BOD₅")
+        st.latex(r"\text{BOD}_5 = (\text{DO}_{\text{awal}} - \text{DO}_{\text{akhir}}) \times P")
+        st.caption("P = Faktor Pengenceran (1 jika tidak ada pengenceran)")
 
-        st.subheader("Perhitungan BOD")
-
-        do_awal = st.number_input(
-            "DO Awal",
-            min_value=0.0,
-            key="bod_awal"
-        )
-
-        do_akhir = st.number_input(
-            "DO Akhir",
-            min_value=0.0,
-            key="bod_akhir"
-        )
+        do_awal  = st.number_input("DO Awal (mg/L)",       min_value=0.0, key="bod_ap_da")
+        do_akhir = st.number_input("DO Akhir (mg/L)",      min_value=0.0, key="bod_ap_dk")
+        fp       = st.number_input("Faktor Pengenceran (P)", min_value=1.0, value=1.0, key="bod_ap_fp")
 
         if st.button("Hitung BOD"):
+            st.session_state["v_bod_ap"] = (do_awal - do_akhir) * fp
 
-            bod = do_awal - do_akhir
+        show_result_and_save("v_bod_ap", "BOD", "Air Permukaan", lok, tgl)
 
-            st.session_state["hasil_bod"] = bod
-            st.success(f"Nilai BOD = {bod:.2f} mg/L")
-
-            if bod <= 30:
-                st.success("✅ Memenuhi baku mutu")
-            else:
-                st.error("❌ Melebihi baku mutu")
-
-    # =================================================
-    # TDS
-    # =================================================
-
+    # ── TDS ──────────────────────────────────────────
     elif submenu == "TDS":
-
         st.subheader("Perhitungan TDS")
+        st.latex(r"\text{TDS} = \frac{(\text{Berat Cawan Akhir} - \text{Berat Cawan Awal}) \times 1000}{\text{Volume Sampel}}")
 
-        berat_awal = st.number_input(
-            "Berat cawan awal (mg)",
-            min_value=0.0,
-            key="tds_awal"
-        )
-
-        berat_akhir = st.number_input(
-            "Berat cawan akhir (mg)",
-            min_value=0.0,
-            key="tds_akhir"
-        )
-
-        volume = st.number_input(
-            "Volume sampel",
-            min_value=0.0,
-            key="tds_volume"
-        )
+        ba  = st.number_input("Berat cawan awal (mg)",  min_value=0.0, key="tds_ba")
+        bk  = st.number_input("Berat cawan akhir (mg)", min_value=0.0, key="tds_bk")
+        vol = st.number_input("Volume sampel (mL)",     min_value=0.1, value=100.0, key="tds_vol")
 
         if st.button("Hitung TDS"):
+            if vol <= 0:
+                st.error("Volume sampel harus > 0 mL.")
+            else:
+                st.session_state["v_tds"] = ((bk - ba) * 1000) / vol
 
-            tds = ((berat_akhir - berat_awal) * 1000) / volume
+        show_result_and_save("v_tds", "TDS", "Air Permukaan", lok, tgl)
 
-            st.session_state["hasil_tds"] = tds
-            st.success(f"Nilai TDS = {tds:.2f} mg/L")
 
-# =====================================================
-# AIR LIMBAH
-# =====================================================
+# ═══════════════════════════════════════════════════════
+# 3 ── AIR LIMBAH
+# ═══════════════════════════════════════════════════════
 
 elif menu == "Air Limbah":
 
     st.header("🏭 Analisis Air Limbah")
+    lok, tgl = info_sampel_expander("al")
 
-    parameter = st.selectbox(
-        "Pilih Parameter",
-        [
-            "pH",
-            "COD",
-            "BOD",
-            "Amonia"
-        ]
-    )
+    parameter = st.selectbox("Pilih Parameter", ["pH", "COD", "BOD", "Amonia"])
 
-    # ==============================================
-    # pH
-    # ==============================================
-
+    # ── pH ───────────────────────────────────────────
     if parameter == "pH":
+        st.subheader("Evaluasi pH")
 
-        ph = st.number_input(
-            "Masukkan nilai pH",
-            min_value=0.0,
-            max_value=14.0
-        )
+        ph_val = st.number_input("Masukkan nilai pH", min_value=0.0, max_value=14.0, step=0.01)
 
         if st.button("Evaluasi pH"):
+            st.session_state["v_ph"] = ph_val
 
-            st.session_state["hasil_ph"] = ph
+        show_result_and_save("v_ph", "pH", "Air Limbah", lok, tgl)
 
-            if 6 <= ph <= 9:
-                st.success("✅ pH memenuhi baku mutu")
-            else:
-                st.error("❌ pH melebihi baku mutu")
-
-    # ==============================================
-    # COD
-    # ==============================================
-
+    # ── COD ──────────────────────────────────────────
     elif parameter == "COD":
+        st.subheader("Perhitungan COD Limbah")
+        st.latex(r"\text{COD} = \frac{(V_{\text{blanko}} - V_{\text{sampel}}) \times N \times 8000}{V_{\text{air}}}")
 
-        blanko = st.number_input(
-            "Volume blanko",
-            min_value=0.0,
-            key="limbah_blanko"
-        )
-
-        sampel = st.number_input(
-            "Volume sampel",
-            min_value=0.0,
-            key="limbah_sampel"
-        )
-
-        normalitas = st.number_input(
-            "Normalitas",
-            min_value=0.0,
-            key="limbah_normalitas"
-        )
-
-        volume = st.number_input(
-            "Volume sampel air",
-            min_value=0.0,
-            key="limbah_volume"
-        )
+        v_blanko   = st.number_input("Volume titrasi blanko (mL)",  min_value=0.0, key="cod_al_bl")
+        v_sampel   = st.number_input("Volume titrasi sampel (mL)",  min_value=0.0, key="cod_al_sp")
+        normalitas = st.number_input("Normalitas FAS",              min_value=0.0, key="cod_al_n")
+        v_air      = st.number_input("Volume sampel air (mL)",      min_value=0.1, value=25.0, key="cod_al_vol")
 
         if st.button("Hitung COD Limbah"):
+            if v_air <= 0:
+                st.error("Volume sampel air harus > 0 mL.")
+            else:
+                st.session_state["v_cod_al"] = ((v_blanko - v_sampel) * normalitas * 8000) / v_air
 
-            cod = ((blanko - sampel) * normalitas * 8000) / volume
+        show_result_and_save("v_cod_al", "COD", "Air Limbah", lok, tgl)
 
-            st.session_state["hasil_cod"] = cod
-            st.success(f"COD = {cod:.2f} mg/L")
-
-    # ==============================================
-    # BOD
-    # ==============================================
-
+    # ── BOD ──────────────────────────────────────────
     elif parameter == "BOD":
+        st.subheader("Perhitungan BOD₅ Limbah")
+        st.latex(r"\text{BOD}_5 = (\text{DO}_{\text{awal}} - \text{DO}_{\text{akhir}}) \times P")
 
-        do_awal = st.number_input(
-            "DO awal",
-            min_value=0.0,
-            key="limbah_bod_awal"
-        )
-
-        do_akhir = st.number_input(
-            "DO akhir",
-            min_value=0.0,
-            key="limbah_bod_akhir"
-        )
+        do_awal  = st.number_input("DO Awal (mg/L)",         min_value=0.0, key="bod_al_da")
+        do_akhir = st.number_input("DO Akhir (mg/L)",        min_value=0.0, key="bod_al_dk")
+        fp       = st.number_input("Faktor Pengenceran (P)", min_value=1.0, value=1.0, key="bod_al_fp")
 
         if st.button("Hitung BOD Limbah"):
+            st.session_state["v_bod_al"] = (do_awal - do_akhir) * fp
 
-            bod = do_awal - do_akhir
+        show_result_and_save("v_bod_al", "BOD", "Air Limbah", lok, tgl)
 
-            st.session_state["hasil_bod"] = bod
-            st.success(f"BOD = {bod:.2f} mg/L")
-
-    # ==============================================
-    # AMONIA
-    # ==============================================
-
+    # ── AMONIA ───────────────────────────────────────
     elif parameter == "Amonia":
+        st.subheader("Evaluasi Amonia (NH₃-N)")
 
-        konsentrasi = st.number_input(
-            "Masukkan konsentrasi amonia",
-            min_value=0.0
-        )
+        konsentrasi = st.number_input("Konsentrasi Amonia (mg/L)", min_value=0.0, step=0.01)
 
         if st.button("Evaluasi Amonia"):
+            # ✅ BUG FIX: variabel 'amonia' tidak terdefinisi → diganti 'konsentrasi'
+            st.session_state["v_amonia"] = konsentrasi
 
-            st.session_state["hasil_amonia"] = amonia
-            st.success(f"Amonia = {konsentrasi:.2f} mg/L")
+        show_result_and_save("v_amonia", "Amonia", "Air Limbah", lok, tgl)
 
-            if konsentrasi <= 10:
-                st.success("✅ Memenuhi baku mutu")
+
+# ═══════════════════════════════════════════════════════
+# 4 ── TABEL SAMPEL
+# ═══════════════════════════════════════════════════════
+
+elif menu == "Tabel Sampel":
+
+    st.header("📋 Tabel Multi-Sampel")
+
+    df = get_df()
+
+    if df.empty:
+        st.info("Belum ada data. Input di menu Air Permukaan atau Air Limbah, lalu tekan **💾 Simpan ke Tabel**.")
+        st.stop()
+
+    # ── Tampilkan tabel dengan warna status ──────────
+    def highlight_status(val):
+        if val == "✅ Memenuhi":
+            return "background-color:#d4edda; color:#155724"
+        elif val == "❌ Melebihi":
+            return "background-color:#f8d7da; color:#721c24"
+        return ""
+
+    st.dataframe(
+        df.style.map(highlight_status, subset=["Status"]),
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.markdown("---")
+
+    # ── Input manual tambahan ─────────────────────────
+    with st.expander("➕ Tambah Baris Manual"):
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            m_lokasi  = st.text_input("Lokasi",    key="manual_lok")
+            m_tipe    = st.selectbox("Tipe Air",   ["Air Permukaan","Air Limbah"], key="manual_tipe")
+        with c2:
+            m_tanggal = st.date_input("Tanggal",   value=date.today(), key="manual_tgl")
+            m_param   = st.selectbox("Parameter",  list(BAKU_MUTU.keys()), key="manual_param")
+        with c3:
+            m_nilai   = st.number_input("Nilai",   min_value=0.0, key="manual_nilai")
+            st.write("")
+            st.write("")
+            if st.button("➕ Tambah ke Tabel"):
+                if not m_lokasi:
+                    st.warning("Isi nama lokasi.")
+                else:
+                    simpan_ke_tabel(m_lokasi, m_tanggal, m_tipe, m_param, m_nilai)
+                    st.success("✅ Baris berhasil ditambahkan.")
+                    st.rerun()
+
+    st.markdown("---")
+
+    # ── Hapus data ────────────────────────────────────
+    col_del1, col_del2 = st.columns(2)
+
+    with col_del1:
+        id_hapus = st.number_input("Hapus baris berdasarkan ID", min_value=1, step=1)
+        if st.button("🗑️ Hapus Baris"):
+            sebelum = len(st.session_state["sampel_list"])
+            st.session_state["sampel_list"] = [
+                s for s in st.session_state["sampel_list"] if s["ID"] != id_hapus
+            ]
+            sesudah = len(st.session_state["sampel_list"])
+            if sebelum > sesudah:
+                st.success(f"Baris ID {id_hapus} berhasil dihapus.")
             else:
-                st.error("❌ Melebihi baku mutu")
+                st.warning(f"ID {id_hapus} tidak ditemukan.")
+            st.rerun()
 
-# =====================================================
-# STATISTIK
-# =====================================================
+    with col_del2:
+        st.write("")
+        st.write("")
+        if st.button("🗑️ Hapus Semua Data", type="primary"):
+            st.session_state["sampel_list"] = []
+            st.session_state["counter"] = 1
+            st.success("Semua data berhasil dihapus.")
+            st.rerun()
+
+
+# ═══════════════════════════════════════════════════════
+# 5 ── STATISTIK & GRAFIK
+# ═══════════════════════════════════════════════════════
 
 elif menu == "Statistik & Grafik":
 
     st.header("📈 Statistik & Grafik")
 
-    cod = st.session_state.get("hasil_cod", 0)
-    bod = st.session_state.get("hasil_bod", 0)
-    tss = st.session_state.get("hasil_tss", 0)
-    tds = st.session_state.get("hasil_tds", 0)
+    df = get_df()
 
-    df = pd.DataFrame({
-        "Parameter": ["COD", "BOD", "TSS", "TDS"],
-        "Nilai": [cod, bod, tss, tds]
-    })
+    if df.empty:
+        st.info("Belum ada data sampel tersimpan.")
+        st.stop()
 
-    st.dataframe(df)
+    # ── Filter ────────────────────────────────────────
+    with st.expander("🔍 Filter Data", expanded=True):
+        f1, f2 = st.columns(2)
+        with f1:
+            f_tipe = st.multiselect(
+                "Tipe Air",
+                options=df["Tipe Air"].unique().tolist(),
+                default=df["Tipe Air"].unique().tolist()
+            )
+        with f2:
+            f_param = st.multiselect(
+                "Parameter",
+                options=df["Parameter"].unique().tolist(),
+                default=df["Parameter"].unique().tolist()
+            )
 
-    fig = px.bar(
-        df,
-        x="Parameter",
-        y="Nilai",
-        color="Parameter",
-        title="Hasil Analisis Kualitas Air"
+    df_f = df[df["Tipe Air"].isin(f_tipe) & df["Parameter"].isin(f_param)]
+
+    if df_f.empty:
+        st.warning("Tidak ada data untuk filter yang dipilih.")
+        st.stop()
+
+    st.markdown("---")
+
+    # ── Chart 1: Bar per parameter & lokasi ──────────
+    fig1 = px.bar(
+        df_f, x="Parameter", y="Nilai",
+        color="Lokasi", barmode="group",
+        text_auto=".2f",
+        title="Nilai per Parameter & Lokasi",
+        labels={"Nilai": "Nilai (mg/L)"}
     )
+    st.plotly_chart(fig1, use_container_width=True)
 
-    st.plotly_chart(fig, use_container_width=True)
+    # ── Chart 2: Tren waktu ───────────────────────────
+    fig2 = px.line(
+        df_f.sort_values("Tanggal"),
+        x="Tanggal", y="Nilai",
+        color="Parameter", markers=True,
+        symbol="Lokasi",
+        title="Tren Nilai per Tanggal",
+        labels={"Nilai": "Nilai (mg/L)"},
+        hover_data=["Lokasi", "Tipe Air", "Status"]
+    )
+    st.plotly_chart(fig2, use_container_width=True)
 
-# =====================================================
-# EXPORT PDF
-# =====================================================
+    # ── Chart 3: Kepatuhan per lokasi ─────────────────
+    status_df = (
+        df_f.groupby(["Lokasi", "Status"])
+            .size()
+            .reset_index(name="Jumlah")
+    )
+    fig3 = px.bar(
+        status_df, x="Lokasi", y="Jumlah",
+        color="Status", barmode="stack",
+        title="Kepatuhan Baku Mutu per Lokasi",
+        color_discrete_map={"✅ Memenuhi": "#00CC66", "❌ Melebihi": "#FF4444"}
+    )
+    st.plotly_chart(fig3, use_container_width=True)
+
+    # ── Statistik deskriptif ──────────────────────────
+    st.subheader("📐 Statistik Deskriptif per Parameter")
+    desc = df_f.groupby("Parameter")["Nilai"].describe().round(3)
+    desc.columns = ["N", "Mean", "Std Dev", "Min", "Q1 (25%)", "Median", "Q3 (75%)", "Max"]
+    st.dataframe(desc, use_container_width=True)
+
+
+# ═══════════════════════════════════════════════════════
+# 6 ── EXPORT PDF
+# ═══════════════════════════════════════════════════════
 
 elif menu == "Export PDF":
 
     st.header("📄 Export Laporan PDF")
 
-    lokasi = st.text_input("Nama Lokasi")
+    instansi   = st.text_input("Nama Instansi / Judul Laporan")
+    analis     = st.text_input("Nama Analis")
+    ket_tambahan = st.text_area("Keterangan Tambahan (opsional)")
 
-    if st.button("Buat PDF"):
+    if st.button("Buat & Download PDF"):
 
-        doc = SimpleDocTemplate("laporan_hydrolysis.pdf")
+        df = get_df()
 
-        styles = getSampleStyleSheet()
+        doc = SimpleDocTemplate(
+            "laporan_hydrolysis.pdf",
+            pagesize=A4,
+            rightMargin=30, leftMargin=30,
+            topMargin=40,   bottomMargin=30
+        )
 
+        styles  = getSampleStyleSheet()
         content = []
 
-        cod = st.session_state.get("hasil_cod", "-")
-        bod = st.session_state.get("hasil_bod", "-")
-        tss = st.session_state.get("hasil_tss", "-")
-        tds = st.session_state.get("hasil_tds", "-")
+        # ── Header ──
+        content.append(Paragraph("LAPORAN ANALISIS KUALITAS AIR", styles["Title"]))
+        content.append(Spacer(1, 8))
+        content.append(Paragraph("POLITEKNIK AKA BOGOR — HydroLysis", styles["Heading2"]))
+        content.append(Spacer(1, 12))
+        content.append(Paragraph(f"Instansi : {instansi or '-'}", styles["Normal"]))
+        content.append(Paragraph(f"Analis   : {analis   or '-'}", styles["Normal"]))
+        content.append(Paragraph(f"Tanggal  : {date.today()}", styles["Normal"]))
+        if ket_tambahan:
+            content.append(Paragraph(f"Keterangan: {ket_tambahan}", styles["Normal"]))
+        content.append(Spacer(1, 16))
 
-        content.append(
-            Paragraph("Laporan Analisis Air", styles['Title'])
-        )
+        # ── Tabel data ──
+        if df.empty:
+            content.append(Paragraph("Tidak ada data sampel tersimpan.", styles["Normal"]))
+        else:
+            header = [str(c) for c in df.columns.tolist()]
+            rows   = [[str(v) for v in row] for row in df.values.tolist()]
+            table_data = [header] + rows
 
-        content.append(
-            Paragraph(f"Lokasi: {lokasi}", styles['Normal'])
-        )
-
-        content.append(
-            Paragraph(f"COD: {cod} mg/L", styles['Normal'])
-        )
-
-        content.append(
-            Paragraph(f"BOD: {bod} mg/L", styles['Normal'])
-        )
-
-        content.append(
-            Paragraph(f"TSS: {tss} mg/L", styles['Normal'])
-        )
-
-        content.append(
-            Paragraph(f"TDS: {tds} mg/L", styles['Normal'])
-        )
+            t = Table(table_data, repeatRows=1)
+            t.setStyle(TableStyle([
+                ("BACKGROUND",    (0, 0), (-1,  0), colors.HexColor("#0099FF")),
+                ("TEXTCOLOR",     (0, 0), (-1,  0), colors.white),
+                ("FONTNAME",      (0, 0), (-1,  0), "Helvetica-Bold"),
+                ("FONTSIZE",      (0, 0), (-1, -1), 7),
+                ("ALIGN",         (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+                ("ROWBACKGROUNDS",(0, 1), (-1, -1), [colors.white, colors.HexColor("#EAF4FF")]),
+                ("GRID",          (0, 0), (-1, -1), 0.4, colors.grey),
+                ("TOPPADDING",    (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ]))
+            content.append(t)
 
         doc.build(content)
 
-        with open("laporan_hydrolysis.pdf", "rb") as pdf_file:
-            PDFbyte = pdf_file.read()
+        with open("laporan_hydrolysis.pdf", "rb") as f:
+            pdf_bytes = f.read()
 
         st.download_button(
-            label="Download PDF",
-            data=PDFbyte,
-            file_name="laporan_hydrolysis.pdf",
-            mime='application/octet-stream'
+            label="⬇️ Download Laporan PDF",
+            data=pdf_bytes,
+            file_name=f"laporan_hydrolysis_{date.today()}.pdf",
+            mime="application/octet-stream"
         )
