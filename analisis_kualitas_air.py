@@ -145,8 +145,15 @@ h1,h2,h3                           { color:#0099FF; }
 # TITLE
 # ═══════════════════════════════════════════════════════
 
-st.title("💧 HydroLysis")
-st.caption("Program Analisis Kualitas Air — Air Permukaan & Air Limbah | POLITEKNIK AKA BOGOR")
+st.markdown("""
+<div style="text-align: center; padding: 1.2rem 0 0.5rem 0;">
+    <h1 style="color:#0099FF; font-size:2.8rem; margin-bottom:0.2rem;">💧 HydroLysis</h1>
+    <p style="color:#4A6FA5; font-size:1rem; margin-top:0;">
+        Program Analisis Kualitas Air — Air Permukaan &amp; Air Limbah<br>
+        <strong>POLITEKNIK AKA BOGOR</strong>
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════
 # SIDEBAR MENU
@@ -231,6 +238,56 @@ if menu == "Dashboard":
             Baku Mutu Air Limbah Domestik
             """)
 
+    st.markdown("---")
+
+     # ── Cara Penggunaan ───────────────────────────────
+    with st.expander("📖 Cara Penggunaan Aplikasi"):
+        st.markdown("""
+        Ikuti langkah-langkah berikut untuk menggunakan **HydroLysis**:
+ 
+        ---
+ 
+        #### 1️⃣ Input Data Sampling
+        - Buka menu **Air Permukaan** atau **Air Limbah** di sidebar kiri
+        - Isi **Nama Lokasi** dan **Tanggal Sampling** pada bagian *Informasi Sampel*
+        - Pilih parameter yang ingin dihitung (TSS, COD, BOD, dll.)
+        - Masukkan data hasil pengukuran laboratorium ke dalam field yang tersedia
+        - Klik tombol **Hitung** untuk memproses nilai
+ 
+        ---
+ 
+        #### 2️⃣ Simpan ke Tabel
+        - Setelah hasil muncul, klik tombol **💾 Simpan ke Tabel**
+        - Data akan tersimpan otomatis beserta status kepatuhan baku mutu
+        - Ulangi langkah 1–2 untuk setiap sampel atau parameter yang berbeda
+ 
+        ---
+ 
+        #### 3️⃣ Kelola Data di Tabel Sampel
+        - Buka menu **Tabel Sampel** untuk melihat seluruh data yang telah disimpan
+        - Gunakan fitur **Tambah Baris Manual** jika ingin menambah data tanpa perhitungan
+        - Hapus data per baris menggunakan **ID**, atau hapus semua sekaligus
+ 
+        ---
+ 
+        #### 4️⃣ Analisis di Statistik & Grafik
+        - Buka menu **Statistik & Grafik** untuk melihat visualisasi data
+        - Gunakan **filter** Tipe Air dan Parameter untuk memfokuskan analisis
+        - Tersedia: grafik batang, keterangan waktu dan lokasi, serta statistik deskriptif
+ 
+        ---
+ 
+        #### 5️⃣ Ekspor Laporan
+        - Buka menu **Export PDF**
+        - Isi nama instansi, nama analis, dan keterangan tambahan
+        - Klik **Buat & Download PDF** — laporan berisi seluruh tabel data akan diunduh otomatis
+ 
+        ---
+ 
+        > ⚠️ **Catatan:** Data hanya tersimpan selama sesi berlangsung. Jika halaman di-refresh
+        > atau browser ditutup, data akan hilang. Pastikan mengunduh laporan PDF sebelum menutup aplikasi.
+        """)
+ 
     st.markdown("---")
 
     # ── Monitoring data ───────────────────────────────
