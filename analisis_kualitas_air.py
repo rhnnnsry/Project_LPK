@@ -646,27 +646,27 @@ elif menu == "Statistik & Grafik":
 # ═══════════════════════════════════════════════════════
 
 elif menu == "Export PDF":
-
+ 
     st.header("📄 Export Laporan PDF")
-
+ 
     instansi   = st.text_input("Nama Instansi / Judul Laporan")
     analis     = st.text_input("Nama Analis")
     ket_tambahan = st.text_area("Keterangan Tambahan (opsional)")
-
+ 
     if st.button("Buat & Download PDF"):
-
+ 
         df = get_df()
-
+ 
         doc = SimpleDocTemplate(
             "laporan_hydrolysis.pdf",
             pagesize=A4,
             rightMargin=30, leftMargin=30,
             topMargin=40,   bottomMargin=30
         )
-
+ 
         styles  = getSampleStyleSheet()
         content = []
-
+ 
         # ── Header ──
         content.append(Paragraph("LAPORAN ANALISIS KUALITAS AIR", styles["Title"]))
         content.append(Spacer(1, 8))
@@ -678,7 +678,7 @@ elif menu == "Export PDF":
         if ket_tambahan:
             content.append(Paragraph(f"Keterangan: {ket_tambahan}", styles["Normal"]))
         content.append(Spacer(1, 16))
-
+ 
         # ── Tabel data ──
         if df.empty:
             content.append(Paragraph("Tidak ada data sampel tersimpan.", styles["Normal"]))
@@ -686,7 +686,7 @@ elif menu == "Export PDF":
             header = [str(c) for c in df.columns.tolist()]
             rows   = [[str(v) for v in row] for row in df.values.tolist()]
             table_data = [header] + rows
-
+ 
             t = Table(table_data, repeatRows=1)
             t.setStyle(TableStyle([
                 ("BACKGROUND",    (0, 0), (-1,  0), colors.HexColor("#0099FF")),
@@ -701,12 +701,195 @@ elif menu == "Export PDF":
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
             ]))
             content.append(t)
-
+ 
+        # ── Kesimpulan ──
+        if not df.empty:
+            content.append(Spacer(1, 20))
+            content.append(Paragraph("KESIMPULAN HASIL ANALISIS KUALITAS AIR", styles["Heading2"]))
+            content.append(Spacer(1, 8))
+ 
+            # Referensi regulasi per tipe air
+            REGULASI = {
+                "Air Permukaan": "PP No. 22 Tahun 2021 tentang Penyelenggaraan Perlindungan dan Pengelolaan Lingkungan Hidup",
+                "Air Limbah":    "PermenLHK No. P.68/Menlhk/Setjen/Kum.1/8/2016 tentang Baku Mutu Air Limbah Domestik",
+            }
+ 
+            # Baku mutu nilai numerik untuk kesimpulan
+            BM_NUM = {
+                "TSS":    ("≤ 50 mg/L",   50,   "le"),
+                "COD":    ("≤ 100 mg/L",  100,  "le"),
+                "BOD":    ("≤ 30 mg/L",   30,   "le"),
+                "TDS":    ("≤ 500 mg/L",  500,  "le"),
+                "pH":     ("6.0 – 9.0",   (6.0, 9.0), "range"),
+                "Amonia": ("≤ 10 mg/L",   10,   "le"),
+            }
+ 
+            def status_param(param, nilai):
+                if param not in BM_NUM:
+                    return "Memenuhi"
+                _, bm, mode = BM_NUM[param]
+                if mode == "le":
+                    return "Memenuhi" if nilai <= bm else "Melebihi"
+                elif mode == "range":
+                    lo, hi = bm
+                    return "Memenuhi" if lo <= nilai <= hi else "Melebihi"
+                return "Memenuhi"
+ 
+            # Kelompokkan per tipe air lalu per lokasi
+            for tipe in df["Tipe Air"].unique():
+                df_tipe = df[df["Tipe Air"] == tipe]
+                regulasi = REGULASI.get(tipe, "-")
+ 
+                content.append(Spacer(1, 10))
+                content.append(Paragraph(f"A. {tipe}", styles["Heading3"]))
+                content.append(Paragraph(
+                    f"Dasar hukum penilaian: {regulasi}",
+                    styles["Italic"]
+                ))
+                content.append(Spacer(1, 6))
+ 
+                for lokasi in df_tipe["Lokasi"].unique():
+                    df_lok = df_tipe[df_tipe["Lokasi"] == lokasi]
+                    params_melebihi = []
+                    params_memenuhi = []
+ 
+                    for _, row in df_lok.iterrows():
+                        param = row["Parameter"]
+                        nilai = row["Nilai"]
+                        bm_str = BM_NUM.get(param, ("-", None, None))[0]
+                        st_text = status_param(param, nilai)
+                        entry = f"{param} = {nilai:.3f} (Baku Mutu: {bm_str})"
+                        if st_text == "Melebihi":
+                            params_melebihi.append(entry)
+                        else:
+                            params_memenuhi.append(entry)
+ 
+                    semua_memenuhi = len(params_melebihi) == 0
+ 
+                    # Header lokasi
+                    content.append(Paragraph(
+                        f"Lokasi: {lokasi}",
+                        styles["Heading4"]
+                    ))
+ 
+                    # Tabel ringkasan per lokasi
+                    lok_header = ["Parameter", "Nilai", "Baku Mutu", "Status"]
+                    lok_rows   = [
+                        [
+                            row["Parameter"],
+                            f"{row['Nilai']:.3f}",
+                            BM_NUM.get(row["Parameter"], ("-", None, None))[0],
+                            row["Status"],
+                        ]
+                        for _, row in df_lok.iterrows()
+                    ]
+                    lok_table = Table([lok_header] + lok_rows, hAlign="LEFT")
+                    lok_table.setStyle(TableStyle([
+                        ("BACKGROUND",    (0, 0), (-1, 0),  colors.HexColor("#0099FF")),
+                        ("TEXTCOLOR",     (0, 0), (-1, 0),  colors.white),
+                        ("FONTNAME",      (0, 0), (-1, 0),  "Helvetica-Bold"),
+                        ("FONTSIZE",      (0, 0), (-1, -1), 8),
+                        ("ALIGN",         (0, 0), (-1, -1), "CENTER"),
+                        ("GRID",          (0, 0), (-1, -1), 0.4, colors.grey),
+                        ("TOPPADDING",    (0, 0), (-1, -1), 3),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                        ("ROWBACKGROUNDS",(0, 1), (-1, -1), [colors.white, colors.HexColor("#EAF4FF")]),
+                    ]))
+                    content.append(lok_table)
+                    content.append(Spacer(1, 6))
+ 
+                    # Narasi kesimpulan
+                    if semua_memenuhi:
+                        narasi = (
+                            f"Berdasarkan hasil analisis, seluruh parameter kualitas air di lokasi "
+                            f"<b>{lokasi}</b> dinyatakan <b>MEMENUHI</b> baku mutu sesuai {regulasi}. "
+                            f"Air pada lokasi ini dinilai <b>AMAN</b> berdasarkan parameter yang diuji."
+                        )
+                        content.append(Paragraph(narasi, styles["Normal"]))
+                    else:
+                        daftar_le = "; ".join(params_melebihi)
+                        narasi = (
+                            f"Berdasarkan hasil analisis, terdapat {len(params_melebihi)} parameter "
+                            f"di lokasi <b>{lokasi}</b> yang <b>MELEBIHI</b> baku mutu sesuai {regulasi}, "
+                            f"yaitu: {daftar_le}. "
+                            f"Air pada lokasi ini dinilai <b>TIDAK AMAN / TERCEMAR</b> dan memerlukan "
+                            f"penanganan lebih lanjut sebelum digunakan atau dibuang ke badan air penerima."
+                        )
+                        content.append(Paragraph(narasi, styles["Normal"]))
+ 
+                    content.append(Spacer(1, 10))
+ 
+            # Kesimpulan global
+            content.append(Spacer(1, 6))
+            total_lok    = df["Lokasi"].nunique()
+            total_param  = len(df)
+            jml_melebihi = (df["Status"] == "❌ Melebihi").sum()
+            jml_memenuhi = (df["Status"] == "✅ Memenuhi").sum()
+            pct_memenuhi = (jml_memenuhi / total_param * 100) if total_param > 0 else 0
+ 
+            content.append(Paragraph("Ringkasan Keseluruhan", styles["Heading3"]))
+            content.append(Spacer(1, 4))
+ 
+            global_rows = [
+                ["Uraian", "Jumlah"],
+                ["Total lokasi sampling",            str(total_lok)],
+                ["Total pengukuran parameter",       str(total_param)],
+                ["Parameter memenuhi baku mutu",     str(jml_memenuhi)],
+                ["Parameter melebihi baku mutu",     str(jml_melebihi)],
+                ["Tingkat kepatuhan",                f"{pct_memenuhi:.1f}%"],
+            ]
+            global_table = Table(global_rows, hAlign="LEFT", colWidths=[280, 100])
+            global_table.setStyle(TableStyle([
+                ("BACKGROUND",    (0, 0), (-1, 0),  colors.HexColor("#0099FF")),
+                ("TEXTCOLOR",     (0, 0), (-1, 0),  colors.white),
+                ("FONTNAME",      (0, 0), (-1, 0),  "Helvetica-Bold"),
+                ("FONTSIZE",      (0, 0), (-1, -1), 8),
+                ("ALIGN",         (1, 0), (1, -1),  "CENTER"),
+                ("GRID",          (0, 0), (-1, -1), 0.4, colors.grey),
+                ("TOPPADDING",    (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("ROWBACKGROUNDS",(0, 1), (-1, -1), [colors.white, colors.HexColor("#EAF4FF")]),
+            ]))
+            content.append(global_table)
+            content.append(Spacer(1, 10))
+ 
+            # Kalimat penutup
+            if jml_melebihi == 0:
+                penutup = (
+                    "Secara keseluruhan, semua lokasi sampling menunjukkan kualitas air yang "
+                    "<b>BAIK</b> dan memenuhi seluruh baku mutu yang berlaku."
+                )
+            elif pct_memenuhi >= 70:
+                penutup = (
+                    f"Secara keseluruhan, sebagian besar parameter ({pct_memenuhi:.1f}%) memenuhi baku mutu. "
+                    "Namun terdapat beberapa parameter yang masih perlu diperhatikan dan ditindaklanjuti."
+                )
+            else:
+                penutup = (
+                    f"Secara keseluruhan, tingkat kepatuhan baku mutu hanya {pct_memenuhi:.1f}%. "
+                    "Diperlukan penanganan serius terhadap sumber pencemaran dan pengolahan air "
+                    "sebelum dimanfaatkan atau dibuang ke lingkungan."
+                )
+            content.append(Paragraph(penutup, styles["Normal"]))
+            content.append(Spacer(1, 16))
+ 
+            # Tanda tangan
+            content.append(Paragraph(
+                f"Bogor, {date.today().strftime('%d %B %Y')}",
+                styles["Normal"]
+            ))
+            content.append(Spacer(1, 40))
+            content.append(Paragraph(
+                f"({analis or '................................'})",
+                styles["Normal"]
+            ))
+            content.append(Paragraph("Analis / Penanggung Jawab", styles["Normal"]))
+ 
         doc.build(content)
-
+ 
         with open("laporan_hydrolysis.pdf", "rb") as f:
             pdf_bytes = f.read()
-
+ 
         st.download_button(
             label="⬇️ Download Laporan PDF",
             data=pdf_bytes,
