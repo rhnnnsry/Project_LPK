@@ -271,7 +271,7 @@ st.sidebar.metric("Total Sampel Tersimpan", len(st.session_state["sampel_list"])
 
 if menu == "Dashboard":
 
-    st.header("📊 Dashboard")
+    st.header("🏠 Dashboard")
 
      # ── Tentang Aplikasi ──────────────────────────────
     with st.expander("ℹ️ Tentang HydroLysis", expanded=True):
