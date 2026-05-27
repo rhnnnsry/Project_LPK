@@ -147,12 +147,16 @@ with placeholder.container():
         unsafe_allow_html=True
     )
 
-    st.image(
-        "https://media.giphy.com/media/3o7TKsQ8UQw7i5fQBi/giphy.gif",
-        width=250
-    )
+    st.markdown(
+    """
+    <div style='text-align:center;'>
+        <img src='https://media.giphy.com/media/3o7TKsQ8UQw7i5fQBi/giphy.gif' width='250'>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-    st.info("🚀 Initializing WaterLab System...")
+    st.info("🚀 Initializing HydroLysis System...")
 
     progress_bar = st.progress(0)
 
@@ -160,7 +164,7 @@ with placeholder.container():
         time.sleep(0.02)
         progress_bar.progress(i + 1)
 
-    st.success("✅ System Ready!")
+    st.success("System Ready!")
 
     time.sleep(1)
 
