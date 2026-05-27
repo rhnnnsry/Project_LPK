@@ -150,7 +150,7 @@ with placeholder.container():
     st.markdown(
     """
     <div style='text-align:center;'>
-        <img src='https://media.giphy.com/media/3o7TKsQ8UQw7i5fQBi/giphy.gif' width='250'>
+        <img src='https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUyNzZlZXF3NG0xem04czd1N2I3bmM0MGQ0NGYwbzhwYjFsY3hiZXprYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5bCYrRAZ3b5HtQ5HuJ/giphy.gif' width='250'>
     </div>
     """,
     unsafe_allow_html=True
