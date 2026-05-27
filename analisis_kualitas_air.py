@@ -7,6 +7,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from datetime import date
+import time
 
 # ═══════════════════════════════════════════════════════
 # CONFIG
@@ -120,6 +121,50 @@ def info_sampel_expander(prefix: str):
             tgl = st.date_input("Tanggal Sampling", value=date.today(), key=f"{prefix}_tgl")
     return lok, tgl
 
+# =====================================================
+# LOADING SCREEN
+# =====================================================
+
+placeholder = st.empty()
+
+with placeholder.container():
+
+    st.markdown(
+        """
+        <h1 style='text-align: center; color: #0099FF;'>
+        💧 HydroLysis
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <h4 style='text-align: center; color: #102A43;'>
+        Sistem Monitoring Kualitas Air Berbasis Python
+        </h4>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.image(
+        "https://media.giphy.com/media/3o7TKsQ8UQw7i5fQBi/giphy.gif",
+        width=250
+    )
+
+    st.info("🚀 Initializing WaterLab System...")
+
+    progress_bar = st.progress(0)
+
+    for i in range(100):
+        time.sleep(0.02)
+        progress_bar.progress(i + 1)
+
+    st.success("✅ System Ready!")
+
+    time.sleep(1)
+
+placeholder.empty()
 
 # ═══════════════════════════════════════════════════════
 # CUSTOM CSS
