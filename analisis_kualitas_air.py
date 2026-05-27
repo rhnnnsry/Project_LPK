@@ -176,17 +176,62 @@ placeholder.empty()
 
 st.markdown("""
 <style>
-.main                              { background-color:#EAF4FF; color:#102A43; }
-section[data-testid="stSidebar"]   { background-color:#D6ECFF; }
-html,body,[class*="css"]           { color:#102A43; }
-h1,h2,h3                           { color:#0099FF; }
-.stButton>button                   { background-color:#0099FF; color:white;
-                                     border-radius:10px; border:none; font-weight:bold; }
-.stNumberInput input,
-.stTextInput  input,
-.stTextArea   textarea             { background-color:white; color:#102A43; }
-.stSelectbox  div[data-baseweb="select"] { background-color:white; color:#102A43; }
-[data-testid="stDataFrame"]        { background-color:white; }
+
+/* SIDEBAR */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #E0F7FA, #B2EBF2, 90E0EF);
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    padding-top: 20px;
+}
+
+/* SIDEBAR TITLE */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #0077B6;
+}
+
+/* SELECTBOX */
+div[data-baseweb="select"] {
+    background-color: white;
+    border-radius: 18px;
+    border: 2px solid #90E0EF;
+    padding: 2px;
+}
+
+/* MENU BOX */
+.stSelectbox {
+    background-color: transparent;
+    border-radius: 20px;
+    padding: 5px;
+}
+
+/* BUTTON */
+.stButton > button {
+    border-radius: 20px;
+    background: linear-gradient(90deg, #0099FF, #00C6FF);
+    color: white;
+    border: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+/* HOVER BUTTON */
+.stButton > button:hover {
+    transform: scale(1.03);
+    box-shadow: 0px 0px 12px rgba(0,153,255,0.4);
+}
+
+/* METRIC CARD */
+[data-testid="metric-container"] {
+    background-color: white;
+    border-radius: 20px;
+    padding: 10px;
+    border: 1px solid #CDEFFF;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+}
+
 </style>
 """, unsafe_allow_html=True)
 
