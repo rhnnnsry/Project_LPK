@@ -13,7 +13,7 @@ import time
 # CONFIG
 # ═══════════════════════════════════════════════════════
 
-st.set_page_config(page_title="HydroLysis", layout="wide")
+st.set_page_config(page_title="HydroLisis", layout="wide")
 
 # ═══════════════════════════════════════════════════════
 # INIT SESSION STATE
@@ -27,7 +27,7 @@ if "counter" not in st.session_state:
 
 # Temp values untuk setiap parameter (None = belum dihitung)
 for k in ["v_tss", "v_cod_ap", "v_bod_ap", "v_tds",
-          "v_ph",  "v_cod_al", "v_bod_al", "v_amonia"]:
+          "v_ph",  "v_cod_al", "v_bod_al"]:
     if k not in st.session_state:
         st.session_state[k] = None
 
@@ -41,7 +41,6 @@ BAKU_MUTU = {
     "BOD":    ("≤ 30 mg/L",   lambda v: v <= 30),
     "TDS":    ("≤ 500 mg/L",  lambda v: v <= 500),
     "pH":     ("6.0 – 9.0",   lambda v: 6.0 <= v <= 9.0),
-    "Amonia": ("≤ 10 mg/L",   lambda v: v <= 10),
 }
 
 # ═══════════════════════════════════════════════════════
@@ -132,7 +131,7 @@ with placeholder.container():
     st.markdown(
         """
         <h1 style='text-align: center; color: #0099FF;'>
-        💧 HydroLysis
+        💧 HydroLisis
         </h1>
         """,
         unsafe_allow_html=True
@@ -156,7 +155,7 @@ with placeholder.container():
     unsafe_allow_html=True
 )
 
-    st.info("🚀 Initializing HydroLysis System...")
+    st.info("🚀 Initializing HydroLisis...")
 
     progress_bar = st.progress(0)
 
@@ -278,7 +277,7 @@ if menu == "Dashboard":
  
         st.markdown("""
         ### 🎯 Tujuan Aplikasi
-        **HydroLysis** adalah program berbasis web yang dirancang untuk membantu mahasiswa maupun
+        **HydroLisis** adalah program berbasis web yang dirancang untuk membantu mahasiswa maupun
         praktisi laboratorium di **Politeknik AKA Bogor** dalam melakukan analisis dan pemantauan
         kualitas air secara sistematis. Aplikasi ini juga merupakan bagian dari projek mata kuliah **Logika Pemrograman Komputer**.
         Pada aplikasi ini pengguna bisa:
@@ -326,7 +325,6 @@ if menu == "Dashboard":
             | pH | - | 6.0 – 9.0 |
             | COD (Chemical Oxygen Demand) | mg/L | ≤ 100 |
             | BOD₅ (Biochemical Oxygen Demand) | mg/L | ≤ 30 |
-            | Amonia (NH₃-N) | mg/L | ≤ 10 |
  
             > 📋 Referensi: **PermenLHK No. P.68 Tahun 2016** tentang
             Baku Mutu Air Limbah Domestik
@@ -560,19 +558,6 @@ elif menu == "Air Limbah":
             st.session_state["v_bod_al"] = (do_awal - do_akhir) * fp
 
         show_result_and_save("v_bod_al", "BOD", "Air Limbah", lok, tgl)
-
-    # ── AMONIA ───────────────────────────────────────
-    elif parameter == "Amonia":
-        st.subheader("Evaluasi Amonia (NH₃-N)")
-
-        konsentrasi = st.number_input("Konsentrasi Amonia (mg/L)", min_value=0.0, step=0.01)
-
-        if st.button("Evaluasi Amonia"):
-            # ✅ BUG FIX: variabel 'amonia' tidak terdefinisi → diganti 'konsentrasi'
-            st.session_state["v_amonia"] = konsentrasi
-
-        show_result_and_save("v_amonia", "Amonia", "Air Limbah", lok, tgl)
-
 
 # ═══════════════════════════════════════════════════════
 # 4 ── TABEL SAMPEL
