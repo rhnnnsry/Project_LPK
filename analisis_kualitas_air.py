@@ -514,7 +514,7 @@ elif menu == "Air Limbah":
     st.header("🏭 Analisis Air Limbah")
     lok, tgl = info_sampel_expander("al")
 
-    parameter = st.selectbox("Pilih Parameter", ["pH", "COD", "BOD", "Amonia"])
+    parameter = st.selectbox("Pilih Parameter", ["pH", "COD", "BOD"])
 
     # ── pH ───────────────────────────────────────────
     if parameter == "pH":
