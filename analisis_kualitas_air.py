@@ -240,7 +240,7 @@ div[data-baseweb="select"] {
 
 st.markdown("""
 <div style="text-align: center; padding: 1.2rem 0 0.5rem 0;">
-    <h1 style="color:#0099FF; font-size:2.8rem; margin-bottom:0.2rem;">💧 HydroLysis</h1>
+    <h1 style="color:#0099FF; font-size:2.8rem; margin-bottom:0.2rem;">💧 HydroLisis</h1>
     <p style="color:#4A6FA5; font-size:1rem; margin-top:0;">
         Program Analisis Kualitas Air — Air Permukaan &amp; Air Limbah<br>
         <strong>POLITEKNIK AKA BOGOR</strong>
@@ -273,7 +273,7 @@ if menu == "Dashboard":
     st.header("🏠 Dashboard")
 
      # ── Tentang Aplikasi ──────────────────────────────
-    with st.expander("ℹ️ Tentang HydroLysis", expanded=True):
+    with st.expander("ℹ️ Tentang HydroLisis", expanded=True):
  
         st.markdown("""
         ### 🎯 Tujuan Aplikasi
