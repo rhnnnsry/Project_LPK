@@ -40,9 +40,47 @@ BAKU_MUTU = {
     "COD":    ("≤ 100 mg/L",  lambda v: v <= 100),
     "BOD":    ("≤ 30 mg/L",   lambda v: v <= 30),
     "TDS":    ("≤ 500 mg/L",  lambda v: v <= 500),
+    "DO":     ("≥ 4 mg/L",    lambda v: v >= 4),
     "pH":     ("6.0 – 9.0",   lambda v: 6.0 <= v <= 9.0),
 }
 
+# Penjelasan Tiap Parameter #
+PENJELASAN_PARAM = {
+    "TSS": (
+        "**TSS (Total Suspended Solids)** adalah jumlah padatan tersuspensi (tidak terlarut) "
+        "dalam air, seperti lumpur, pasir halus, atau sisa organik. Nilai TSS yang tinggi "
+        "menyebabkan air menjadi keruh dan dapat mengganggu kehidupan biota air karena "
+        "menghalangi cahaya matahari masuk ke dalam air."
+    ),
+    "COD": (
+        "**COD (Chemical Oxygen Demand)** mengukur jumlah oksigen yang dibutuhkan untuk "
+        "mengoksidasi seluruh bahan organik dan anorganik secara kimiawi dalam air. "
+        "Nilai COD yang tinggi menunjukkan tingkat pencemaran bahan organik/kimia yang besar."
+    ),
+    "BOD": (
+        "**BOD₅ (Biochemical Oxygen Demand)** mengukur jumlah oksigen yang dibutuhkan oleh "
+        "mikroorganisme untuk menguraikan bahan organik dalam air selama 5 hari. "
+        "Nilai BOD yang tinggi mengindikasikan banyaknya bahan organik yang dapat terurai "
+        "secara biologis, yang juga menguras kadar oksigen terlarut di dalam air."
+    ),
+    "TDS": (
+        "**TDS (Total Dissolved Solids)** adalah jumlah total zat padat yang **terlarut** "
+        "dalam air, meliputi garam mineral, ion logam, dan senyawa terlarut lainnya. "
+        "TDS berbeda dengan TSS karena TDS mengukur partikel yang larut, bukan tersuspensi."
+    ),
+    "DO": (
+        "**DO (Dissolved Oxygen)** adalah kadar oksigen terlarut dalam air yang dibutuhkan "
+        "oleh organisme akuatik (ikan, plankton, mikroorganisme) untuk respirasi. "
+        "Berbeda dengan parameter lain, semakin **tinggi** nilai DO maka kualitas air "
+        "semakin **baik** — nilai DO yang rendah menandakan air kekurangan oksigen akibat "
+        "pencemaran bahan organik berlebih."
+    ),
+    "pH": (
+        "**pH** menunjukkan tingkat keasaman atau kebasaan air pada skala 0–14. "
+        "Air dengan pH terlalu rendah (asam) atau terlalu tinggi (basa) dapat merusak "
+        "ekosistem perairan dan bersifat korosif terhadap material di sekitarnya."
+    ),
+}
 # ═══════════════════════════════════════════════════════
 # HELPER FUNCTIONS
 # ═══════════════════════════════════════════════════════
@@ -304,8 +342,9 @@ if menu == "Dashboard":
             |-----------|--------|-----------|
             | TSS (Total Suspended Solids) | mg/L | ≤ 50 |
             | COD (Chemical Oxygen Demand) | mg/L | ≤ 100 |
-            | BOD₅ (Biochemical Oxygen Demand) | mg/L | ≤ 30 |
+            | BOD (Biochemical Oxygen Demand) | mg/L | ≤ 30 |
             | TDS (Total Dissolved Solids) | mg/L | ≤ 500 |
+            | DO (Dissolved Oxygen) | mg/L | ≥ 4 |
 
             > 📋 Referensi: **PP No. 22 Tahun 2021** tentang Penyelenggaraan
             Perlindungan dan Pengelolaan Lingkungan Hidup
@@ -324,7 +363,7 @@ if menu == "Dashboard":
             |-----------|--------|-----------|
             | pH | - | 6.0 – 9.0 |
             | COD (Chemical Oxygen Demand) | mg/L | ≤ 100 |
-            | BOD₅ (Biochemical Oxygen Demand) | mg/L | ≤ 30 |
+            | BOD (Biochemical Oxygen Demand) | mg/L | ≤ 30 |
  
             > 📋 Referensi: **PermenLHK No. P.68 Tahun 2016** tentang
             Baku Mutu Air Limbah Domestik
@@ -435,7 +474,10 @@ elif menu == "Air Permukaan":
     st.header("🌊 Analisis Air Permukaan")
     lok, tgl = info_sampel_expander("ap")
 
-    submenu = st.selectbox("Pilih Parameter", ["TSS", "COD", "BOD", "TDS"])
+    submenu = st.selectbox("Pilih Parameter", ["TSS", "COD", "BOD", "TDS", "DO"])
+
+    with st.expander(f"ℹ️ Apa itu {submenu}?"):
+        st.markdown(PENJELASAN_PARAM[submenu])
 
     # ── TSS ──────────────────────────────────────────
     if submenu == "TSS":
@@ -504,6 +546,22 @@ elif menu == "Air Permukaan":
 
         show_result_and_save("v_tds", "TDS", "Air Permukaan", lok, tgl)
 
+    # ── DO ───────────────────────────────────────────
+    elif submenu == "DO":
+        st.subheader("Pengukuran DO (Dissolved Oxygen)")
+        st.caption(
+            "Nilai DO umumnya dibaca langsung menggunakan **DO meter** di lokasi sampling, "
+            "atau dihitung melalui metode titrasi Winkler di laboratorium."
+        )
+
+        do_terukur = st.number_input(
+            "Nilai DO terukur (mg/L)", min_value=0.0, step=0.01, key="do_ap_val"
+        )
+
+        if st.button("Catat DO"):
+            st.session_state["v_do"] = do_terukur
+
+        show_result_and_save("v_do", "DO", "Air Permukaan", lok, tgl)
 
 # ═══════════════════════════════════════════════════════
 # 3 ── AIR LIMBAH
@@ -799,8 +857,8 @@ elif menu == "Export PDF":
                 "COD":    ("≤ 100 mg/L",  100,  "le"),
                 "BOD":    ("≤ 30 mg/L",   30,   "le"),
                 "TDS":    ("≤ 500 mg/L",  500,  "le"),
+                "DO":     ("≥ 4 mg/L",    4,    "ge"),
                 "pH":     ("6.0 – 9.0",   (6.0, 9.0), "range"),
-                "Amonia": ("≤ 10 mg/L",   10,   "le"),
             }
  
             def status_param(param, nilai):
