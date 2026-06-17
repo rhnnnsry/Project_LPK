@@ -286,6 +286,28 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Kreator Web #
+def footer():
+
+    st.markdown("---")
+
+    st.markdown("""
+    <div style='text-align: center; color: gray; font-size:15px;'>
+
+    <b>HydroLisis v1.0</b><br>
+
+    Dikembangkan oleh Kelompok 10 Praktikum Logika Pemrograman Komputer Politeknik AKA Bogor<br><br>
+
+    <b>Anggota:</b><br>
+    - Mutiara Rahma Hidayati (2560694)<br>
+    - Nessa Amelia (2560723)<br>
+    - Raihan Surya Isnandar (2560744)<br>
+    - Rusmaya Trisya Amanda (2560765)<br>
+    - Sri Deva (2560788)
+    
+    </div>
+    """, unsafe_allow_html=True)
+
 # ═══════════════════════════════════════════════════════
 # SIDEBAR MENU
 # ═══════════════════════════════════════════════════════
@@ -421,6 +443,7 @@ if menu == "Dashboard":
  
     st.markdown("---")
 
+    footer()
     # ── Monitoring data ───────────────────────────────
     df = get_df()
  
