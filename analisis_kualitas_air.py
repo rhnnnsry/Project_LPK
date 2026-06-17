@@ -335,8 +335,8 @@ if menu == "Dashboard":
     with st.expander("ℹ️ Tentang HydroLisis", expanded=True):
  
         st.markdown("""
-        ### 🎯 Tujuan Aplikasi
         <div style='text-align: justify;'>
+        ### 🎯 Tujuan Aplikasi
         **HydroLisis** adalah program berbasis web yang dirancang untuk membantu mahasiswa maupun
         praktisi laboratorium di **Politeknik AKA Bogor** dalam melakukan analisis dan pemantauan
         kualitas air secara sistematis. Aplikasi ini juga merupakan bagian dari projek mata kuliah **Logika Pemrograman Komputer**.
@@ -353,8 +353,8 @@ if menu == "Dashboard":
  
         with col_ap:
             st.markdown("""
-            ### 🌊 Air Permukaan
             <div style='text-align: justify;'>
+            ### 🌊 Air Permukaan
             Air permukaan adalah air yang berada di atas permukaan tanah, meliputi
             **sungai, danau, waduk, rawa**, dan badan air terbuka lainnya.
             Air ini merupakan sumber utama baku air minum dan irigasi, namun rentan
@@ -375,8 +375,8 @@ if menu == "Dashboard":
 
         with col_al:
             st.markdown("""
-            ### 🏭 Air Limbah
             <div style='text-align: justify;'>
+            ### 🏭 Air Limbah
             Air limbah adalah air buangan yang dihasilkan dari kegiatan industri,
             rumah tangga, pertanian, maupun fasilitas umum. Air limbah mengandung
             berbagai zat pencemar yang harus diolah terlebih dahulu sebelum
