@@ -295,9 +295,8 @@ def footer():
     <div style='text-align: center; color: gray; font-size:15px;'>
 
     <b>HydroLisis</b><br>
-
     Dikembangkan oleh Kelompok 10 Praktikum Logika Pemrograman Komputer Politeknik AKA Bogor<br><br>
-
+    
     <b>Anggota:</b><br>
     Mutiara Rahma Hidayati (2560694)<br>
     Nessa Amelia (2560723)<br>
@@ -337,6 +336,7 @@ if menu == "Dashboard":
  
         st.markdown("""
         ### 🎯 Tujuan Aplikasi
+        <div style='text-align: justify;'>
         **HydroLisis** adalah program berbasis web yang dirancang untuk membantu mahasiswa maupun
         praktisi laboratorium di **Politeknik AKA Bogor** dalam melakukan analisis dan pemantauan
         kualitas air secara sistematis. Aplikasi ini juga merupakan bagian dari projek mata kuliah **Logika Pemrograman Komputer**.
@@ -354,6 +354,7 @@ if menu == "Dashboard":
         with col_ap:
             st.markdown("""
             ### 🌊 Air Permukaan
+            <div style='text-align: justify;'>
             Air permukaan adalah air yang berada di atas permukaan tanah, meliputi
             **sungai, danau, waduk, rawa**, dan badan air terbuka lainnya.
             Air ini merupakan sumber utama baku air minum dan irigasi, namun rentan
@@ -375,6 +376,7 @@ if menu == "Dashboard":
         with col_al:
             st.markdown("""
             ### 🏭 Air Limbah
+            <div style='text-align: justify;'>
             Air limbah adalah air buangan yang dihasilkan dari kegiatan industri,
             rumah tangga, pertanian, maupun fasilitas umum. Air limbah mengandung
             berbagai zat pencemar yang harus diolah terlebih dahulu sebelum
