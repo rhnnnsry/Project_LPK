@@ -294,16 +294,16 @@ def footer():
     st.markdown("""
     <div style='text-align: center; color: gray; font-size:15px;'>
 
-    <b>HydroLisis v1.0</b><br>
+    <b>HydroLisis</b><br>
 
     Dikembangkan oleh Kelompok 10 Praktikum Logika Pemrograman Komputer Politeknik AKA Bogor<br><br>
 
     <b>Anggota:</b><br>
-    - Mutiara Rahma Hidayati (2560694)<br>
-    - Nessa Amelia (2560723)<br>
-    - Raihan Surya Isnandar (2560744)<br>
-    - Rusmaya Trisya Amanda (2560765)<br>
-    - Sri Deva (2560788)
+    Mutiara Rahma Hidayati (2560694)<br>
+    Nessa Amelia (2560723)<br>
+    Raihan Surya Isnandar (2560744)<br>
+    Rusmaya Trisya Amanda (2560765)<br>
+    Sri Deva (2560788)
     
     </div>
     """, unsafe_allow_html=True)
@@ -443,7 +443,6 @@ if menu == "Dashboard":
  
     st.markdown("---")
 
-    footer()
     # ── Monitoring data ───────────────────────────────
     df = get_df()
  
@@ -488,6 +487,7 @@ if menu == "Dashboard":
     st.subheader("10 Data Terbaru")
     st.dataframe(df.tail(10), use_container_width=True)
 
+    footer()
 # ═══════════════════════════════════════════════════════
 # 2 ── AIR PERMUKAAN
 # ═══════════════════════════════════════════════════════
@@ -518,7 +518,7 @@ elif menu == "Air Permukaan":
                 st.session_state["v_tss"] = ((bk - ba) * 1000) / vol
 
         show_result_and_save("v_tss", "TSS", "Air Permukaan", lok, tgl)
-
+    footer()
     # ── COD ──────────────────────────────────────────
     elif submenu == "COD":
         st.subheader("Perhitungan COD")
@@ -536,7 +536,7 @@ elif menu == "Air Permukaan":
                 st.session_state["v_cod_ap"] = ((v_blanko - v_sampel) * normalitas * 8000) / v_air
 
         show_result_and_save("v_cod_ap", "COD", "Air Permukaan", lok, tgl)
-
+    footer()
     # ── BOD ──────────────────────────────────────────
     elif submenu == "BOD":
         st.subheader("Perhitungan BOD₅")
@@ -551,7 +551,7 @@ elif menu == "Air Permukaan":
             st.session_state["v_bod_ap"] = (do_awal - do_akhir) * fp
 
         show_result_and_save("v_bod_ap", "BOD", "Air Permukaan", lok, tgl)
-
+    footer()
     # ── TDS ──────────────────────────────────────────
     elif submenu == "TDS":
         st.subheader("Perhitungan TDS")
@@ -568,7 +568,7 @@ elif menu == "Air Permukaan":
                 st.session_state["v_tds"] = ((bk - ba) * 1000) / vol
 
         show_result_and_save("v_tds", "TDS", "Air Permukaan", lok, tgl)
-
+    footer()
     # ── DO ───────────────────────────────────────────
     elif submenu == "DO":
         st.subheader("Pengukuran DO (Dissolved Oxygen)")
@@ -585,7 +585,7 @@ elif menu == "Air Permukaan":
             st.session_state["v_do"] = do_terukur
 
         show_result_and_save("v_do", "DO", "Air Permukaan", lok, tgl)
-
+    footer()
 # ═══════════════════════════════════════════════════════
 # 3 ── AIR LIMBAH
 # ═══════════════════════════════════════════════════════
@@ -610,7 +610,7 @@ elif menu == "Air Limbah":
             st.session_state["v_ph"] = ph_val
 
         show_result_and_save("v_ph", "pH", "Air Limbah", lok, tgl)
-
+    footer()
     # ── COD ──────────────────────────────────────────
     elif parameter == "COD":
         st.subheader("Perhitungan COD Limbah")
@@ -628,7 +628,7 @@ elif menu == "Air Limbah":
                 st.session_state["v_cod_al"] = ((v_blanko - v_sampel) * normalitas * 8000) / v_air
 
         show_result_and_save("v_cod_al", "COD", "Air Limbah", lok, tgl)
-
+    footer()
     # ── BOD ──────────────────────────────────────────
     elif parameter == "BOD":
         st.subheader("Perhitungan BOD₅ Limbah")
@@ -642,7 +642,7 @@ elif menu == "Air Limbah":
             st.session_state["v_bod_al"] = (do_awal - do_akhir) * fp
 
         show_result_and_save("v_bod_al", "BOD", "Air Limbah", lok, tgl)
-
+    footer()
 # ═══════════════════════════════════════════════════════
 # 4 ── TABEL SAMPEL
 # ═══════════════════════════════════════════════════════
@@ -721,7 +721,7 @@ elif menu == "Tabel Sampel":
             st.session_state["counter"] = 1
             st.success("Semua data berhasil dihapus.")
             st.rerun()
-
+    footer()
 
 # ═══════════════════════════════════════════════════════
 # 5 ── STATISTIK & GRAFIK
@@ -803,7 +803,7 @@ elif menu == "Statistik & Grafik":
     desc.columns = ["N", "Mean", "Std Dev", "Min", "Q1 (25%)", "Median", "Q3 (75%)", "Max"]
     st.dataframe(desc, use_container_width=True)
 
-
+    footer()
 # ═══════════════════════════════════════════════════════
 # 6 ── EXPORT PDF
 # ═══════════════════════════════════════════════════════
@@ -1059,3 +1059,5 @@ elif menu == "Export PDF":
             file_name=f"laporan_hydrolysis_{date.today()}.pdf",
             mime="application/octet-stream"
         )
+
+    footer()
