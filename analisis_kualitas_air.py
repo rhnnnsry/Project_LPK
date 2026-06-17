@@ -574,6 +574,9 @@ elif menu == "Air Limbah":
 
     parameter = st.selectbox("Pilih Parameter", ["pH", "COD", "BOD"])
 
+    with st.expander(f"ℹ️ Apa itu {parameter}?"):
+        st.markdown(PENJELASAN_PARAM[parameter])
+
     # ── pH ───────────────────────────────────────────
     if parameter == "pH":
         st.subheader("Evaluasi pH")
