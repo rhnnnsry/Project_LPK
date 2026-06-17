@@ -289,21 +289,23 @@ st.markdown("""
 # Kreator Web #
 def footer():
 
-    st.markdown("---")
-
     st.markdown("""
-    <div style='text-align: center; color: gray; font-size:15px;'>
+    <hr>
 
-    <b>HydroLisis</b><br>
-    Dikembangkan oleh Kelompok 10 Praktikum Logika Pemrograman Komputer Politeknik AKA Bogor<br><br>
-    
-    <b>Anggota:</b><br>
-    Mutiara Rahma Hidayati (2560694)<br>
-    Nessa Amelia (2560723)<br>
-    Raihan Surya Isnandar (2560744)<br>
-    Rusmaya Trisya Amanda (2560765)<br>
-    Sri Deva (2560788)
-    
+    <div style="text-align:center; padding:10px">
+
+    <h4 style="margin-bottom:0;">HydroLisis</h4>
+
+    <p style="color:gray;">
+    Developed by <b>Kelompok 10</b><br>
+    Program Studi Logika Pemrograman Komputer
+    Politeknik AKA Bogor
+    </p>
+
+    <p style="font-size:13px;color:#888;">
+    Mutiara Rahma Hidayati (2560694) • Nessa Amelia (2560723) • Raihan Surya Isnandar (2560744) • Rusmaya Trisya Amanda (2560765) • Sri Deva (2560788)
+    </p>
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -322,6 +324,22 @@ menu = st.sidebar.selectbox("Pilih Menu", [
 
 st.sidebar.markdown("---")
 st.sidebar.metric("Total Sampel Tersimpan", len(st.session_state["sampel_list"]))
+
+st.sidebar.markdown("---")
+
+st.sidebar.info("""
+👨‍💻 Creator
+
+Mutiara R. H.
+
+Nessa A.
+
+Raihan S. I.
+
+Rusmaya T. A.
+
+Sri Deva
+""")
 
 # ═══════════════════════════════════════════════════════
 # 1 ── DASHBOARD
