@@ -133,7 +133,7 @@ def show_result_and_save(val_key: str, param: str, tipe: str, lok: str, tgl):
     st.markdown("---")
     col_res, col_btn = st.columns([4, 1])
     with col_res:
-        if status == "✅ Memenuhi":
+        if status == "✅ Memenuhi Regulasi Perairan kelas II":
             st.success(label)
         else:
             st.error(label)
