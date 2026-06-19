@@ -216,7 +216,7 @@ st.markdown("""
 
 /* SIDEBAR */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #E0F7FA, #B2EBF2, 90E0EF);
+    background: linear-gradient(180deg, #FFFFFF, #B2EBF2, 90E0EF);
     border-top-right-radius: 25px;
     border-bottom-right-radius: 25px;
     padding-top: 20px;
@@ -328,7 +328,7 @@ st.sidebar.metric("Total Sampel Tersimpan", len(st.session_state["sampel_list"])
 st.sidebar.markdown("---")
 
 st.sidebar.info("""
-👨‍💻 Creator
+Creator:
 
 Mutiara R. H.
 
