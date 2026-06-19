@@ -87,7 +87,7 @@ PENJELASAN_PARAM = {
 
 def cek_status(param: str, nilai: float) -> str:
     if param in BAKU_MUTU:
-        return "✅ Memenuhi" if BAKU_MUTU[param][1](nilai) else "❌ Melebihi"
+        return "✅ Memenuhi Regulasi Perairan kelas II" if BAKU_MUTU[param][1](nilai) else "❌ Melebihi Regulasi Perairan kelas II"
     return "-"
 
 
