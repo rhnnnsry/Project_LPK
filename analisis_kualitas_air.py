@@ -468,13 +468,13 @@ if menu == "Dashboard":
         st.stop()
  
     total     = len(df)
-    memenuhi  = (df["Status"] == "✅ Memenuhi").sum()
-    melebihi  = (df["Status"] == "❌ Melebihi").sum()
+    memenuhi  = (df["Status"] == "✅ Memenuhi Baku Mutu Perairan Kelas II").sum()
+    melebihi  = (df["Status"] == "❌ Melebihi Baku Mutu Perairan Kelas II").sum()
  
     m1, m2, m3 = st.columns(3)
     m1.metric("Total Pengukuran",       total)
-    m2.metric("✅ Memenuhi Baku Mutu",  memenuhi)
-    m3.metric("❌ Melebihi Baku Mutu",  melebihi)
+    m2.metric("✅ Memenuhi Baku Mutu Perairan Kelas II",  memenuhi)
+    m3.metric("❌ Melebihi Baku Mutu Perairan Kelas II",  melebihi)
  
     st.markdown("---")
     col_a, col_b = st.columns(2)
@@ -497,7 +497,7 @@ if menu == "Dashboard":
             pie_df, names="Status", values="Jumlah",
             title="Kepatuhan Baku Mutu",
             color="Status",
-            color_discrete_map={"✅ Memenuhi": "#00CC66", "❌ Melebihi": "#FF4444"}
+            color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "#00CC66", "❌ Melebihi Baku Mutu Perairan Kelas II": "#FF4444"}
         )
         st.plotly_chart(fig2, use_container_width=True)
  
@@ -678,9 +678,9 @@ elif menu == "Tabel Sampel":
 
     # ── Tampilkan tabel dengan warna status ──────────
     def highlight_status(val):
-        if val == "✅ Memenuhi":
+        if val == "✅ Memenuhi Baku Mutu":
             return "background-color:#d4edda; color:#155724"
-        elif val == "❌ Melebihi":
+        elif val == "❌ Melebihi Baku Mutu":
             return "background-color:#f8d7da; color:#721c24"
         return ""
 
@@ -812,7 +812,7 @@ elif menu == "Statistik & Grafik":
         status_df, x="Lokasi", y="Jumlah",
         color="Status", barmode="stack",
         title="Kepatuhan Baku Mutu per Lokasi",
-        color_discrete_map={"✅ Memenuhi": "#00CC66", "❌ Melebihi": "#FF4444"}
+        color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "#00CC66", "❌ Melebihi Baku Mutu Perairan Kelas II": "#FF4444"}
     )
     st.plotly_chart(fig3, use_container_width=True)
 
@@ -984,7 +984,7 @@ elif menu == "Export PDF":
                     if semua_memenuhi:
                         narasi = (
                             f"Berdasarkan hasil analisis, seluruh parameter kualitas air di lokasi "
-                            f"<b>{lokasi}</b> dinyatakan <b>MEMENUHI</b> baku mutu sesuai {regulasi}. "
+                            f"<b>{lokasi}</b> dinyatakan <b>MEMENUHI</b> baku mutu perairan kelas II sesuai {regulasi}. "
                             f"Air pada lokasi ini dinilai <b>AMAN</b> berdasarkan parameter yang diuji."
                         )
                         content.append(Paragraph(narasi, styles["Normal"]))
@@ -1039,11 +1039,11 @@ elif menu == "Export PDF":
             if jml_melebihi == 0:
                 penutup = (
                     "Secara keseluruhan, semua lokasi sampling menunjukkan kualitas air yang "
-                    "<b>BAIK</b> dan memenuhi seluruh baku mutu yang berlaku."
+                    "<b>BAIK</b> dan memenuhi seluruh baku mutu perairan kelas II yang berlaku."
                 )
             elif pct_memenuhi >= 70:
                 penutup = (
-                    f"Secara keseluruhan, sebagian besar parameter ({pct_memenuhi:.1f}%) memenuhi baku mutu. "
+                    f"Secara keseluruhan, sebagian besar parameter ({pct_memenuhi:.1f}%) memenuhi baku mutu perairan kelas II. "
                     "Namun terdapat beberapa parameter yang masih perlu diperhatikan dan ditindaklanjuti."
                 )
             else:
