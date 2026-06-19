@@ -678,9 +678,9 @@ elif menu == "Tabel Sampel":
 
     # ── Tampilkan tabel dengan warna status ──────────
     def highlight_status(val):
-        if val == "✅ Memenuhi Baku Mutu":
+        if val == "✅ Memenuhi Baku Mutu Perairan Kelas II":
             return "background-color:#d4edda; color:#155724"
-        elif val == "❌ Melebihi Baku Mutu":
+        elif val == "❌ Melebihi Baku Mutu Perairan Kelas II":
             return "background-color:#f8d7da; color:#721c24"
         return ""
 
@@ -812,7 +812,7 @@ elif menu == "Statistik & Grafik":
         status_df, x="Lokasi", y="Jumlah",
         color="Status", barmode="stack",
         title="Kepatuhan Baku Mutu per Lokasi",
-        color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "FF0000", "❌ Melebihi Baku Mutu Perairan Kelas II": "#50C878"}
+        color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "#50C878", "❌ Melebihi Baku Mutu Perairan Kelas II": "#FF0000"}
     )
     st.plotly_chart(fig3, use_container_width=True)
 
@@ -1005,8 +1005,8 @@ elif menu == "Export PDF":
             content.append(Spacer(1, 6))
             total_lok    = df["Lokasi"].nunique()
             total_param  = len(df)
-            jml_melebihi = (df["Status"] == "❌ Melebihi").sum()
-            jml_memenuhi = (df["Status"] == "✅ Memenuhi").sum()
+            jml_melebihi = (df["Status"] == "❌ Melebihi Baku Mutu Perairan Kelas II").sum()
+            jml_memenuhi = (df["Status"] == "✅ Memenuhi Baku Mutu Perairan Kelas II").sum()
             pct_memenuhi = (jml_memenuhi / total_param * 100) if total_param > 0 else 0
  
             content.append(Paragraph("Ringkasan Keseluruhan", styles["Heading3"]))
