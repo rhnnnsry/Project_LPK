@@ -468,13 +468,13 @@ if menu == "Dashboard":
         st.stop()
  
     total     = len(df)
-    memenuhi  = (df["Status"] == "✅ Memenuhi Baku Mutu Perairan Kelas II").sum()
-    melebihi  = (df["Status"] == "❌ Melebihi Baku Mutu Perairan Kelas II").sum()
+    memenuhi  = (df["Status"] == "✅ Memenuhi Regulasi Perairan Kelas II").sum()
+    melebihi  = (df["Status"] == "❌ Melebihi Regulasi Perairan Kelas II").sum()
  
     m1, m2, m3 = st.columns(3)
     m1.metric("Total Pengukuran",       total)
-    m2.metric("✅ Memenuhi Baku Mutu Perairan Kelas II",  memenuhi)
-    m3.metric("❌ Melebihi Baku Mutu Perairan Kelas II",  melebihi)
+    m2.metric("✅ Memenuhi Regulasi Perairan Kelas II",  memenuhi)
+    m3.metric("❌ Melebihi Regulasi Perairan Kelas II",  melebihi)
  
     st.markdown("---")
     col_a, col_b = st.columns(2)
@@ -497,7 +497,7 @@ if menu == "Dashboard":
             pie_df, names="Status", values="Jumlah",
             title="Kepatuhan Baku Mutu",
             color="Status",
-            color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "#50C878", "❌ Melebihi Baku Mutu Perairan Kelas II": "#FF0000"}
+            color_discrete_map={"✅ Memenuhi Regulasi Perairan Kelas II": "#50C878", "❌ Melebihi Regulasi Perairan Kelas II": "#FF0000"}
         )
         st.plotly_chart(fig2, use_container_width=True)
  
@@ -678,9 +678,9 @@ elif menu == "Tabel Sampel":
 
     # ── Tampilkan tabel dengan warna status ──────────
     def highlight_status(val):
-        if val == "✅ Memenuhi Baku Mutu Perairan Kelas II":
+        if val == "✅ Memenuhi Regulasi Perairan Kelas II":
             return "background-color:#d4edda; color:#155724"
-        elif val == "❌ Melebihi Baku Mutu Perairan Kelas II":
+        elif val == "❌ Melebihi Regulasi Perairan Kelas II":
             return "background-color:#f8d7da; color:#721c24"
         return ""
 
@@ -813,7 +813,7 @@ elif menu == "Statistik & Grafik":
         status_df, x="Lokasi", y="Jumlah",
         color="Status", barmode="stack",
         title="Kepatuhan Baku Mutu per Lokasi",
-        color_discrete_map={"✅ Memenuhi Baku Mutu": "#50C878", "❌ Melebihi Baku Mutu": "#FF0000"}
+        color_discrete_map={"✅ Memenuhi Regulasi Perairan Kelas II": "#50C878", "❌ Melebihi Regulasi Perairan Kelas II": "#FF0000"}
     )
     st.plotly_chart(fig3, use_container_width=True)
 
@@ -1006,8 +1006,8 @@ elif menu == "Export PDF":
             content.append(Spacer(1, 6))
             total_lok    = df["Lokasi"].nunique()
             total_param  = len(df)
-            jml_melebihi = (df["Status"] == "❌ Melebihi Baku Mutu Perairan Kelas II").sum()
-            jml_memenuhi = (df["Status"] == "✅ Memenuhi Baku Mutu Perairan Kelas II").sum()
+            jml_melebihi = (df["Status"] == "❌ Melebihi Regulasi Perairan Kelas II").sum()
+            jml_memenuhi = (df["Status"] == "✅ Memenuhi Regulasi Perairan Kelas II").sum()
             pct_memenuhi = (jml_memenuhi / total_param * 100) if total_param > 0 else 0
  
             content.append(Paragraph("Ringkasan Keseluruhan", styles["Heading3"]))
