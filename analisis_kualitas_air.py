@@ -216,7 +216,7 @@ st.markdown("""
 
 /* SIDEBAR */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #FFFFFF, #B2EBF2, 90E0EF);
+    background: linear-gradient(180deg, #B2EBF2, 90E0EF);
     border-top-right-radius: 25px;
     border-bottom-right-radius: 25px;
     padding-top: 20px;
@@ -497,7 +497,7 @@ if menu == "Dashboard":
             pie_df, names="Status", values="Jumlah",
             title="Kepatuhan Baku Mutu",
             color="Status",
-            color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "#00CC66", "❌ Melebihi Baku Mutu Perairan Kelas II": "#FF4444"}
+            color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "#50C878", "❌ Melebihi Baku Mutu Perairan Kelas II": "#FF0000"}
         )
         st.plotly_chart(fig2, use_container_width=True)
  
