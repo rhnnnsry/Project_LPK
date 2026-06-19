@@ -812,7 +812,7 @@ elif menu == "Statistik & Grafik":
         status_df, x="Lokasi", y="Jumlah",
         color="Status", barmode="stack",
         title="Kepatuhan Baku Mutu per Lokasi",
-        color_discrete_map={"✅ Memenuhi Baku Mutu Perairan Kelas II": "#50C878", "❌ Melebihi Baku Mutu Perairan Kelas II": "#FF0000"}
+        color_discrete_map={"✅ Memenuhi Baku Mutu": "#50C878", "❌ Melebihi Baku Mutu": "#FF0000"}
     )
     st.plotly_chart(fig3, use_container_width=True)
 
