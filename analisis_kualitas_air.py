@@ -808,6 +808,7 @@ elif menu == "Statistik & Grafik":
             .size()
             .reset_index(name="Jumlah")
     )
+    status="✅ Memenuhi Baku Mutu"
     fig3 = px.bar(
         status_df, x="Lokasi", y="Jumlah",
         color="Status", barmode="stack",
